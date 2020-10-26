@@ -4,5 +4,6 @@
 
 Samples for using Gradle Graalvm Annotations Processor.
 
-| Sample | |
-| Basic | Basic example of the Graalvm Annotation Processor. |
+|Sample|Description|
+|--------------|--------------------------|
+| Basic |  Basic example of the Graalvm Annotation Processor. |
