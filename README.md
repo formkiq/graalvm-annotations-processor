@@ -16,3 +16,6 @@ dependencies {
     <!-- Replace 1.0.0 with the version you want to use -->
 }
 ```
+
+## Samples
+See [Samples](https://github.com/formkiq/graalvm-annotations-processor/tree/master/samples) for examples on how to use the Graalvm Annotations and Processor.
