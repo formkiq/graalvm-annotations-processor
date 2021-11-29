@@ -66,6 +66,10 @@ import javax.tools.StandardLocation;
 @SupportedSourceVersion(SourceVersion.RELEASE_11)
 public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
 
+  /** The package separator character: '.'. */
+  private static final char PACKAGE_SEPARATOR = '.';
+  /** The inner class separator character: '$'. */
+  private static final char INNER_CLASS_SEPARATOR = '$';
   /** Log {@link Level}. */
   private static final Level LOGLEVEL = Level.INFO;
   /** {@link Logger}. */
@@ -361,8 +365,17 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
     try {
       reflectable.className();
     } catch (MirroredTypeException e) {
+
       TypeMirror typeMirror = e.getTypeMirror();
-      className = asTypeElement(typeMirror).getQualifiedName().toString();
+      TypeElement asTypeElement = asTypeElement(typeMirror);
+
+      className = asTypeElement.getQualifiedName().toString();
+
+      try {
+        className = forName(className).getName();
+      } catch (ClassNotFoundException ee) {
+        LOGGER.log(Level.WARNING, "cannot find class " + className);
+      }
     }
 
     Reflect reflect = getReflect(className);
@@ -382,6 +395,33 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
   private TypeElement asTypeElement(final TypeMirror typeMirror) {
     Types typeUtils = this.processingEnv.getTypeUtils();
     return (TypeElement) typeUtils.asElement(typeMirror);
+  }
+
+  /**
+   * Replacement for {@code Class.forName()} that also returns Class instances. Furthermore, it is
+   * also capable of resolving inner class names in Java source
+   *
+   * @param name the name of the Class
+   * @return Class instance for the supplied name
+   * @throws ClassNotFoundException if the class was not found
+   */
+  private Class<?> forName(final String name) throws ClassNotFoundException {
+
+    try {
+      return Class.forName(name);
+    } catch (ClassNotFoundException e) {
+
+      int lastDotIndex = name.lastIndexOf(PACKAGE_SEPARATOR);
+      if (lastDotIndex != -1) {
+        String innerClassName =
+            name.substring(0, lastDotIndex)
+                + INNER_CLASS_SEPARATOR
+                + name.substring(lastDotIndex + 1);
+        return forName(innerClassName);
+      }
+
+      throw e;
+    }
   }
 
   /**

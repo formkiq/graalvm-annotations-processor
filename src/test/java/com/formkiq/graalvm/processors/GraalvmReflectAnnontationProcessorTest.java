@@ -161,6 +161,33 @@ public class GraalvmReflectAnnontationProcessorTest {
     assertEquals("java.lang.String", ((List<String>) methods.get(0).get("parameterTypes")).get(0));
   }
 
+  @Test
+  public void testReflectableClass02() throws IOException {
+    Compilation compilation =
+        javac()
+            .withProcessors(new GraalvmReflectAnnontationProcessor())
+            .compile(
+                JavaFileObjects.forSourceString(
+                    "Test",
+                    "package test;\n"
+                        + "import com.formkiq.graalvm.annotations.*;\n"
+                        + "@ReflectableClass("
+                        + "className=com.formkiq.graalvm.processors.Test5.Test5Inner.class"
+                        + ")\n"
+                        + "public class Test { }\n"));
+
+    List<Map<String, Object>> map = getReflectConf(compilation);
+
+    assertEquals(1, map.size());
+    assertEquals("com.formkiq.graalvm.processors.Test5$Test5Inner", map.get(0).get("name"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allPublicConstructors"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allPublicMethods"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allPublicFields"));
+    assertEquals(Boolean.FALSE, map.get(0).get("allDeclaredConstructors"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allDeclaredMethods"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allDeclaredFields"));
+  }
+
   @SuppressWarnings("unchecked")
   @Test
   public void testReflectableImportFile01() throws IOException {
