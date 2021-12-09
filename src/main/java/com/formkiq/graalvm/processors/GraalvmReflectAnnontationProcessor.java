@@ -95,6 +95,7 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
       case METHOD:
         className = ((TypeElement) element.getEnclosingElement()).getQualifiedName().toString();
         break;
+      case ENUM:
       case CLASS:
         className = ((TypeElement) element).getQualifiedName().toString();
         break;
@@ -461,7 +462,7 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
             reflect.addMethod(methodName, parameterTypes);
 
             break;
-
+          case ENUM:
           case CLASS:
             reflect = processClass(reflect, reflectable);
             break;
