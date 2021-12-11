@@ -12,7 +12,7 @@ Add the following to your build.gradle to enable processing [FormKiQ's Graalvm A
 
 ```
 dependencies {
-    annotationProcessor 'com.formkiq:graalvm-annotations-processor:1.0.0'
+    annotationProcessor 'com.formkiq:graalvm-annotations-processor:1.1.1'
     <!-- Replace 1.0.0 with the version you want to use -->
 }
 ```
