@@ -575,4 +575,32 @@ public class GraalvmReflectAnnontationProcessorTest {
     assertNull(map.get(1).get("fields"));
     assertNull(map.get(1).get("methods"));
   }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void testEnumAnnotations() throws IOException {
+    Compilation compilation =
+        javac()
+            .withProcessors(new GraalvmReflectAnnontationProcessor())
+            .compile(
+                JavaFileObjects.forSourceString(
+                    "TestEnum",
+                    "import com.formkiq.graalvm.annotations.Reflectable;\n"
+                        + "@Reflectable\n"
+                        + "public enum TestEnum {\n"
+                        + "  REFLECTED_ENUM_ONE,\n"
+                        + "  REFLECTED_ENUM_TWO\n"
+                        + "}"));
+
+    List<Map<String, Object>> map = getReflectConf(compilation);
+
+    assertEquals(1, map.size());
+    assertEquals("TestEnum", map.get(0).get("name"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allPublicConstructors"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allPublicMethods"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allPublicFields"));
+    assertEquals(Boolean.FALSE, map.get(0).get("allDeclaredConstructors"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allDeclaredMethods"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allDeclaredFields"));
+  }
 }
