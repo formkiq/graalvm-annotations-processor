@@ -30,7 +30,7 @@ dependencies {
 	compileOnly group: 'com.google.auto.service', name: 'auto-service-annotations', version: '1.0-rc7'
 
     implementation group: 'com.formkiq', name: 'graalvm-annotations', version: '1.1.0'
-	implementation group: 'com.google.code.gson', name: 'gson', version: '2.8.6'
+	implementation group: 'com.google.code.gson', name: 'gson', version: '2.9.0'
 	testImplementation group: 'junit', name: 'junit', version:'4.+'
 	testImplementation group: 'com.google.testing.compile', name: 'compile-testing', version: '0.18'
 }
