@@ -31,9 +31,11 @@ public class Reflect {
    *
    * @param fieldName {@link String}
    * @param allowWrite boolean
+   * @param allowUnsafeAccess boolean
    */
   @SuppressWarnings("unchecked")
-  public void addField(final String fieldName, final boolean allowWrite) {
+  public void addField(
+      final String fieldName, final boolean allowWrite, final boolean allowUnsafeAccess) {
 
     if (!this.data.containsKey("methods")) {
       this.data.put("methods", new ArrayList<>());
@@ -43,7 +45,12 @@ public class Reflect {
       this.data.put("fields", new ArrayList<>());
     }
 
-    Map<String, Object> map = Map.of("allowWrite", allowWrite, "name", fieldName);
+    Map<String, Object> map =
+        new HashMap<>(Map.of("allowWrite", Boolean.valueOf(allowWrite), "name", fieldName));
+    if (allowUnsafeAccess) {
+      map.put("allowUnsafeAccess", Boolean.valueOf(allowUnsafeAccess));
+    }
+
     ((List<Map<String, Object>>) this.data.get("fields")).add(map);
   }
 

@@ -40,6 +40,11 @@ public class GraalvmReflectAnnontationProcessorTest {
   /** {@link Gson}. */
   private Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 
+  /**
+   * testReflectableImport01.
+   *
+   * @throws IOException IOException
+   */
   @SuppressWarnings("unchecked")
   @Test
   public void testReflectableImport01() throws IOException {
@@ -77,6 +82,11 @@ public class GraalvmReflectAnnontationProcessorTest {
     assertEquals("java.lang.String", ((List<String>) methods.get(0).get("parameterTypes")).get(0));
   }
 
+  /**
+   * testReflectableClasses01.
+   *
+   * @throws IOException IOException
+   */
   @SuppressWarnings("unchecked")
   @Test
   public void testReflectableClasses01() throws IOException {
@@ -119,6 +129,11 @@ public class GraalvmReflectAnnontationProcessorTest {
     assertEquals("java.lang.String", ((List<String>) methods.get(0).get("parameterTypes")).get(0));
   }
 
+  /**
+   * testReflectableClass01.
+   *
+   * @throws IOException IOException
+   */
   @SuppressWarnings("unchecked")
   @Test
   public void testReflectableClass01() throws IOException {
@@ -153,6 +168,7 @@ public class GraalvmReflectAnnontationProcessorTest {
     assertEquals(1, fields.size());
     assertEquals("foo", fields.get(0).get("name"));
     assertEquals(Boolean.TRUE, fields.get(0).get("allowWrite"));
+    assertNull(fields.get(0).get("allowUnsafeAccess"));
 
     List<Map<String, Object>> methods = (List<Map<String, Object>>) map.get(0).get("methods");
     assertEquals(1, methods.size());
@@ -161,8 +177,49 @@ public class GraalvmReflectAnnontationProcessorTest {
     assertEquals("java.lang.String", ((List<String>) methods.get(0).get("parameterTypes")).get(0));
   }
 
+  /**
+   * Test allowUnsafeAccess.
+   *
+   * @throws IOException IOException
+   */
+  @SuppressWarnings("unchecked")
   @Test
   public void testReflectableClass02() throws IOException {
+    Compilation compilation =
+        javac()
+            .withProcessors(new GraalvmReflectAnnontationProcessor())
+            .compile(
+                JavaFileObjects.forSourceString(
+                    "Test",
+                    "package test;\n"
+                        + "import com.formkiq.graalvm.annotations.*;\n"
+                        + "@ReflectableClass("
+                        + "className=com.formkiq.graalvm.processors.Test4.class,"
+                        + "allDeclaredConstructors=false,\n"
+                        + "    fields = {@ReflectableField(allowUnsafeAccess = true, "
+                        + "allowWrite = true, name = \"foo\")},\n"
+                        + "    methods = {@ReflectableMethod(name = \"bar\", "
+                        + "parameterTypes = {\"java.lang.String\"})})\n"
+                        + "public class Test { }\n"));
+
+    List<Map<String, Object>> map = getReflectConf(compilation);
+
+    assertEquals(1, map.size());
+
+    List<Map<String, String>> fields = (List<Map<String, String>>) map.get(0).get("fields");
+    assertEquals(1, fields.size());
+    assertEquals("foo", fields.get(0).get("name"));
+    assertEquals(Boolean.TRUE, fields.get(0).get("allowWrite"));
+    assertEquals(Boolean.TRUE, fields.get(0).get("allowUnsafeAccess"));
+  }
+
+  /**
+   * testReflectableClass03.
+   *
+   * @throws IOException IOException
+   */
+  @Test
+  public void testReflectableClass03() throws IOException {
     Compilation compilation =
         javac()
             .withProcessors(new GraalvmReflectAnnontationProcessor())
@@ -188,6 +245,11 @@ public class GraalvmReflectAnnontationProcessorTest {
     assertEquals(Boolean.TRUE, map.get(0).get("allDeclaredFields"));
   }
 
+  /**
+   * testReflectableImportFile01.
+   *
+   * @throws IOException IOException
+   */
   @SuppressWarnings("unchecked")
   @Test
   public void testReflectableImportFile01() throws IOException {
@@ -247,6 +309,11 @@ public class GraalvmReflectAnnontationProcessorTest {
     assertThat(compilation).succeededWithoutWarnings();
   }
 
+  /**
+   * testClassAnnotation.
+   *
+   * @throws IOException IOException
+   */
   @Test
   public void testClassAnnotation() throws IOException {
     Compilation compilation =
@@ -275,13 +342,13 @@ public class GraalvmReflectAnnontationProcessorTest {
     assertNull(map.get(0).get("methods"));
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"unchecked", "resource"})
   private List<Map<String, Object>> getReflectConf(final Compilation compilation)
       throws JsonSyntaxException, JsonIOException, IOException {
     Optional<JavaFileObject> file =
         compilation.generatedFile(StandardLocation.CLASS_OUTPUT, "META-INF/graal/reflect.json");
 
-    List<Map<String, Object>> list = gson.fromJson(file.get().openReader(false), List.class);
+    List<Map<String, Object>> list = this.gson.fromJson(file.get().openReader(false), List.class);
 
     Collections.sort(
         list,
@@ -295,6 +362,11 @@ public class GraalvmReflectAnnontationProcessorTest {
     return list;
   }
 
+  /**
+   * testClassAnnotationWithSettings.
+   *
+   * @throws IOException IOException
+   */
   @Test
   public void testClassAnnotationWithSettings() throws IOException {
     Compilation compilation =
@@ -329,6 +401,11 @@ public class GraalvmReflectAnnontationProcessorTest {
     assertNull(map.get(0).get("methods"));
   }
 
+  /**
+   * testConstructorAnnotations.
+   *
+   * @throws IOException IOException
+   */
   @SuppressWarnings("unchecked")
   @Test
   public void testConstructorAnnotations() throws IOException {
@@ -374,6 +451,11 @@ public class GraalvmReflectAnnontationProcessorTest {
         ((List<String>) methods.get(1).get("parameterTypes")).get(1));
   }
 
+  /**
+   * testMethodAnnotations.
+   *
+   * @throws IOException IOException
+   */
   @SuppressWarnings("unchecked")
   @Test
   public void testMethodAnnotations() throws IOException {
@@ -419,6 +501,11 @@ public class GraalvmReflectAnnontationProcessorTest {
         ((List<String>) methods.get(1).get("parameterTypes")).get(1));
   }
 
+  /**
+   * testFieldAnnotations.
+   *
+   * @throws IOException IOException
+   */
   @SuppressWarnings("unchecked")
   @Test
   public void testFieldAnnotations() throws IOException {
@@ -455,6 +542,11 @@ public class GraalvmReflectAnnontationProcessorTest {
     assertEquals(Boolean.FALSE, fields.get(1).get("allowWrite"));
   }
 
+  /**
+   * testFieldAnnotationsWithSettings.
+   *
+   * @throws IOException IOException
+   */
   @SuppressWarnings("unchecked")
   @Test
   public void testFieldAnnotationsWithSettings() throws IOException {
@@ -484,6 +576,11 @@ public class GraalvmReflectAnnontationProcessorTest {
     assertEquals(Boolean.FALSE, fields.get(1).get("allowWrite"));
   }
 
+  /**
+   * testMixedAnnotations.
+   *
+   * @throws IOException IOException
+   */
   @SuppressWarnings("unchecked")
   @Test
   public void testMixedAnnotations() throws IOException {
@@ -518,6 +615,11 @@ public class GraalvmReflectAnnontationProcessorTest {
     assertTrue(((List<String>) methods.get(0).get("parameterTypes")).isEmpty());
   }
 
+  /**
+   * testMultipleSourceFiles.
+   *
+   * @throws IOException IOException
+   */
   @SuppressWarnings("unchecked")
   @Test
   public void testMultipleSourceFiles() throws IOException {
@@ -576,7 +678,11 @@ public class GraalvmReflectAnnontationProcessorTest {
     assertNull(map.get(1).get("methods"));
   }
 
-  @SuppressWarnings("unchecked")
+  /**
+   * testEnumAnnotations.
+   *
+   * @throws IOException IOException
+   */
   @Test
   public void testEnumAnnotations() throws IOException {
     Compilation compilation =
