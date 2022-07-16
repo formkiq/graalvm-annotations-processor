@@ -114,11 +114,11 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
    */
   private Reflect getReflect(final String className) {
 
-    Reflect reflect = reflects.getOrDefault(className, null);
+    Reflect reflect = this.reflects.getOrDefault(className, null);
 
     if (reflect == null) {
       reflect = new Reflect();
-      reflects.put(className, reflect);
+      this.reflects.put(className, reflect);
       LOGGER.log(LOGLEVEL, "creating new Element");
     } else {
       LOGGER.log(LOGLEVEL, "appending to previous Element");
@@ -158,12 +158,12 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
 
     LOGGER.log(LOGLEVEL, "processClass " + reflect.name());
     reflect
-        .allDeclaredConstructors(reflectable.allDeclaredConstructors())
-        .allDeclaredFields(reflectable.allDeclaredFields())
-        .allDeclaredMethods(reflectable.allDeclaredMethods())
-        .allPublicConstructors(reflectable.allPublicConstructors())
-        .allPublicFields(reflectable.allPublicFields())
-        .allPublicMethods(reflectable.allPublicMethods());
+        .allDeclaredConstructors(Boolean.valueOf(reflectable.allDeclaredConstructors()))
+        .allDeclaredFields(Boolean.valueOf(reflectable.allDeclaredFields()))
+        .allDeclaredMethods(Boolean.valueOf(reflectable.allDeclaredMethods()))
+        .allPublicConstructors(Boolean.valueOf(reflectable.allPublicConstructors()))
+        .allPublicFields(Boolean.valueOf(reflectable.allPublicFields()))
+        .allPublicMethods(Boolean.valueOf(reflectable.allPublicMethods()));
 
     return reflect;
   }
@@ -179,12 +179,12 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
 
     LOGGER.log(LOGLEVEL, "processClass " + reflect.name());
     reflect
-        .allDeclaredConstructors(reflectable.allDeclaredConstructors())
-        .allDeclaredFields(reflectable.allDeclaredFields())
-        .allDeclaredMethods(reflectable.allDeclaredMethods())
-        .allPublicConstructors(reflectable.allPublicConstructors())
-        .allPublicFields(reflectable.allPublicFields())
-        .allPublicMethods(reflectable.allPublicMethods());
+        .allDeclaredConstructors(Boolean.valueOf(reflectable.allDeclaredConstructors()))
+        .allDeclaredFields(Boolean.valueOf(reflectable.allDeclaredFields()))
+        .allDeclaredMethods(Boolean.valueOf(reflectable.allDeclaredMethods()))
+        .allPublicConstructors(Boolean.valueOf(reflectable.allPublicConstructors()))
+        .allPublicFields(Boolean.valueOf(reflectable.allPublicFields()))
+        .allPublicMethods(Boolean.valueOf(reflectable.allPublicMethods()));
 
     return reflect;
   }
@@ -208,7 +208,7 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
         Reflectable reflection = field.getAnnotation(Reflectable.class);
         if (reflection != null) {
           LOGGER.log(LOGLEVEL, "adding Field " + field.getName() + " to " + clazz);
-          reflect.addField(field.getName(), reflectable.allowWrite());
+          reflect.addField(field.getName(), reflection.allowWrite(), false);
         }
       }
 
@@ -305,7 +305,7 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
             ClassLoader classLoader = getClass().getClassLoader();
             URL resource = classLoader.getResource(file);
             String data = Files.readString(new File(resource.getFile()).toPath());
-            List<Map<String, Object>> list = gson.fromJson(data, List.class);
+            List<Map<String, Object>> list = this.gson.fromJson(data, List.class);
 
             for (Map<String, Object> map : list) {
               Reflect reflect = getReflect(map.get("name").toString());
@@ -384,7 +384,7 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
 
     for (ReflectableField field : reflectable.fields()) {
       LOGGER.log(LOGLEVEL, "adding Field " + field.name() + " to " + className);
-      reflect.addField(field.name(), field.allowWrite());
+      reflect.addField(field.name(), field.allowWrite(), field.allowUnsafeAccess());
     }
 
     for (ReflectableMethod method : reflectable.methods()) {
@@ -446,7 +446,7 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
           case FIELD:
             String fieldName = element.getSimpleName().toString();
             LOGGER.log(LOGLEVEL, "adding Field " + fieldName + " to " + className);
-            reflect.addField(fieldName, reflectable.allowWrite());
+            reflect.addField(fieldName, reflectable.allowWrite(), false);
             break;
           case CONSTRUCTOR:
           case METHOD:
@@ -492,7 +492,7 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
     try {
 
       FileObject file =
-          processingEnv
+          this.processingEnv
               .getFiler()
               .createResource(StandardLocation.CLASS_OUTPUT, "", "META-INF/graal/reflect.json");
 
@@ -500,7 +500,7 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
           this.reflects.values().stream().map(r -> r.data()).collect(Collectors.toList());
 
       try (Writer w = new OutputStreamWriter(file.openOutputStream(), "UTF-8")) {
-        w.write(gson.toJson(data));
+        w.write(this.gson.toJson(data));
       }
 
     } catch (IOException e) {
