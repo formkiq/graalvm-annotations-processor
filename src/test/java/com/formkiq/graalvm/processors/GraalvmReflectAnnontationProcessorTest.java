@@ -246,6 +246,49 @@ public class GraalvmReflectAnnontationProcessorTest {
   }
 
   /**
+   * test multiple @ReflectableClass.
+   *
+   * @throws IOException IOException
+   */
+  @Test
+  public void testReflectableClass04() throws IOException {
+    Compilation compilation =
+        javac()
+            .withProcessors(new GraalvmReflectAnnontationProcessor())
+            .compile(
+                JavaFileObjects.forSourceString(
+                    "Test",
+                    "package test;\n"
+                        + "import com.formkiq.graalvm.annotations.*;\n"
+                        + "@ReflectableClass("
+                        + "className=com.formkiq.graalvm.processors.Test5.Test5Inner.class"
+                        + ")\n"
+                        + "@ReflectableClass("
+                        + "className=com.formkiq.graalvm.processors.Test4.class"
+                        + ")\n"
+                        + "public class Test { }\n"));
+
+    List<Map<String, Object>> map = getReflectConf(compilation);
+
+    assertEquals(2, map.size());
+    assertEquals("com.formkiq.graalvm.processors.Test4", map.get(0).get("name"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allPublicConstructors"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allPublicMethods"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allPublicFields"));
+    assertEquals(Boolean.FALSE, map.get(0).get("allDeclaredConstructors"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allDeclaredMethods"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allDeclaredFields"));
+
+    assertEquals("com.formkiq.graalvm.processors.Test5$Test5Inner", map.get(1).get("name"));
+    assertEquals(Boolean.TRUE, map.get(1).get("allPublicConstructors"));
+    assertEquals(Boolean.TRUE, map.get(1).get("allPublicMethods"));
+    assertEquals(Boolean.TRUE, map.get(1).get("allPublicFields"));
+    assertEquals(Boolean.FALSE, map.get(1).get("allDeclaredConstructors"));
+    assertEquals(Boolean.TRUE, map.get(1).get("allDeclaredMethods"));
+    assertEquals(Boolean.TRUE, map.get(1).get("allDeclaredFields"));
+  }
+
+  /**
    * testReflectableImportFile01.
    *
    * @throws IOException IOException
