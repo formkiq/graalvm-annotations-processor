@@ -61,7 +61,8 @@ import javax.tools.StandardLocation;
   "com.formkiq.graalvm.annotations.Reflectable",
   "com.formkiq.graalvm.annotations.ReflectableImport",
   "com.formkiq.graalvm.annotations.ReflectableClasses",
-  "com.formkiq.graalvm.annotations.ReflectableClass"
+  "com.formkiq.graalvm.annotations.ReflectableClass",
+  "com.formkiq.graalvm.annotations.ReflectableClass.ReflectableClasses"
 })
 @SupportedSourceVersion(SourceVersion.RELEASE_11)
 public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
@@ -344,7 +345,11 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
       }
     }
 
-    for (Element element : roundEnv.getElementsAnnotatedWith(ReflectableClass.class)) {
+    Set<? extends Element> reflectableClasses =
+        roundEnv.getElementsAnnotatedWithAny(
+            Set.of(ReflectableClass.class, ReflectableClass.ReflectableClasses.class));
+
+    for (Element element : reflectableClasses) {
       String className = getClassName(element);
       LOGGER.log(LOGLEVEL, "processing 'ReflectableClasses' annotation on class " + className);
 
