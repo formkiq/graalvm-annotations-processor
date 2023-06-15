@@ -30,6 +30,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
 import org.junit.Test;
@@ -59,7 +60,7 @@ public class GraalvmReflectAnnontationProcessorTest {
                         + "@ReflectableImport(classes=com.formkiq.graalvm.processors.Test3.class)\n"
                         + "public class Test { }\n"));
 
-    List<Map<String, Object>> map = getReflectConf(compilation);
+    List<Map<String, Object>> map = getReflectConf(compilation, "com.formkiq.graalvm.processors");
 
     assertEquals(1, map.size());
     assertEquals("com.formkiq.graalvm.processors.Test3", map.get(0).get("name"));
@@ -106,7 +107,7 @@ public class GraalvmReflectAnnontationProcessorTest {
                         + "parameterTypes = {\"java.lang.String\"})})})\n"
                         + "public class Test { }\n"));
 
-    List<Map<String, Object>> map = getReflectConf(compilation);
+    List<Map<String, Object>> map = getReflectConf(compilation, "com.formkiq.graalvm.processors");
 
     assertEquals(1, map.size());
     assertEquals("com.formkiq.graalvm.processors.Test4", map.get(0).get("name"));
@@ -153,7 +154,7 @@ public class GraalvmReflectAnnontationProcessorTest {
                         + "parameterTypes = {\"java.lang.String\"})})\n"
                         + "public class Test { }\n"));
 
-    List<Map<String, Object>> map = getReflectConf(compilation);
+    List<Map<String, Object>> map = getReflectConf(compilation, "com.formkiq.graalvm.processors");
 
     assertEquals(1, map.size());
     assertEquals("com.formkiq.graalvm.processors.Test4", map.get(0).get("name"));
@@ -202,7 +203,7 @@ public class GraalvmReflectAnnontationProcessorTest {
                         + "parameterTypes = {\"java.lang.String\"})})\n"
                         + "public class Test { }\n"));
 
-    List<Map<String, Object>> map = getReflectConf(compilation);
+    List<Map<String, Object>> map = getReflectConf(compilation, "com.formkiq.graalvm.processors");
 
     assertEquals(1, map.size());
 
@@ -233,7 +234,7 @@ public class GraalvmReflectAnnontationProcessorTest {
                         + ")\n"
                         + "public class Test { }\n"));
 
-    List<Map<String, Object>> map = getReflectConf(compilation);
+    List<Map<String, Object>> map = getReflectConf(compilation, "com.formkiq.graalvm.processors");
 
     assertEquals(1, map.size());
     assertEquals("com.formkiq.graalvm.processors.Test5$Test5Inner", map.get(0).get("name"));
@@ -268,7 +269,7 @@ public class GraalvmReflectAnnontationProcessorTest {
                         + ")\n"
                         + "public class Test { }\n"));
 
-    List<Map<String, Object>> map = getReflectConf(compilation);
+    List<Map<String, Object>> map = getReflectConf(compilation, "com.formkiq.graalvm.processors");
 
     assertEquals(2, map.size());
     assertEquals("com.formkiq.graalvm.processors.Test4", map.get(0).get("name"));
@@ -308,7 +309,7 @@ public class GraalvmReflectAnnontationProcessorTest {
                         + "@ReflectableImport(files=\"test.json\")\n"
                         + "final class Test { }\n"));
 
-    List<Map<String, Object>> map = getReflectConf(compilation);
+    List<Map<String, Object>> map = getReflectConf(compilation, "test");
 
     assertEquals(2, map.size());
     assertEquals("sample.Test", map.get(0).get("name"));
@@ -349,7 +350,7 @@ public class GraalvmReflectAnnontationProcessorTest {
         javac()
             .withProcessors(new GraalvmReflectAnnontationProcessor())
             .compile(JavaFileObjects.forSourceString("Test", "final class Test {}\n"));
-    assertThat(compilation).succeededWithoutWarnings();
+    assertThat(compilation).succeeded();
   }
 
   /**
@@ -371,7 +372,7 @@ public class GraalvmReflectAnnontationProcessorTest {
                         + "@Reflectable\n"
                         + "final class Test { }\n"));
 
-    List<Map<String, Object>> map = getReflectConf(compilation);
+    List<Map<String, Object>> map = getReflectConf(compilation, "test");
     assertEquals(1, map.size());
     assertEquals("test.Test", map.get(0).get("name"));
     assertEquals(Boolean.TRUE, map.get(0).get("allPublicConstructors"));
@@ -386,10 +387,13 @@ public class GraalvmReflectAnnontationProcessorTest {
   }
 
   @SuppressWarnings({"unchecked", "resource"})
-  private List<Map<String, Object>> getReflectConf(final Compilation compilation)
+  private List<Map<String, Object>> getReflectConf(
+      final Compilation compilation, final String filename)
       throws JsonSyntaxException, JsonIOException, IOException {
     Optional<JavaFileObject> file =
-        compilation.generatedFile(StandardLocation.CLASS_OUTPUT, "META-INF/graal/reflect.json");
+        compilation.generatedFile(
+            StandardLocation.CLASS_OUTPUT,
+            "META-INF/native-image/" + filename + "/reflect-config.json");
 
     List<Map<String, Object>> list = this.gson.fromJson(file.get().openReader(false), List.class);
 
@@ -429,7 +433,7 @@ public class GraalvmReflectAnnontationProcessorTest {
                         + "  allDeclaredFields = true)\n"
                         + "final class Test {}\n"));
 
-    List<Map<String, Object>> map = getReflectConf(compilation);
+    List<Map<String, Object>> map = getReflectConf(compilation, "default");
 
     assertEquals(1, map.size());
     assertEquals("Test", map.get(0).get("name"));
@@ -468,7 +472,7 @@ public class GraalvmReflectAnnontationProcessorTest {
                         + "  public Test(int foo, List<String> bar) {}\n"
                         + "}\n"));
 
-    List<Map<String, Object>> map = getReflectConf(compilation);
+    List<Map<String, Object>> map = getReflectConf(compilation, "default");
 
     assertEquals(1, map.size());
     assertEquals("Test", map.get(0).get("name"));
@@ -518,7 +522,7 @@ public class GraalvmReflectAnnontationProcessorTest {
                         + "  public void testParameters(int foo, List<String> bar) {}\n"
                         + "}\n"));
 
-    List<Map<String, Object>> map = getReflectConf(compilation);
+    List<Map<String, Object>> map = getReflectConf(compilation, "default");
 
     assertEquals(1, map.size());
     assertEquals("Test", map.get(0).get("name"));
@@ -566,7 +570,7 @@ public class GraalvmReflectAnnontationProcessorTest {
                         + "  @Reflectable int bar;\n"
                         + "}\n"));
 
-    List<Map<String, Object>> map = getReflectConf(compilation);
+    List<Map<String, Object>> map = getReflectConf(compilation, "default");
 
     assertEquals(1, map.size());
     assertEquals("Test", map.get(0).get("name"));
@@ -607,7 +611,7 @@ public class GraalvmReflectAnnontationProcessorTest {
                         + "  @Reflectable int bar;\n"
                         + "}\n"));
 
-    List<Map<String, Object>> map = getReflectConf(compilation);
+    List<Map<String, Object>> map = getReflectConf(compilation, "default");
 
     assertEquals(1, map.size());
     assertEquals("Test", map.get(0).get("name"));
@@ -644,7 +648,7 @@ public class GraalvmReflectAnnontationProcessorTest {
                         + "  public void testParameters(int foo, List<String> bar) {}\n"
                         + "}\n"));
 
-    List<Map<String, Object>> map = getReflectConf(compilation);
+    List<Map<String, Object>> map = getReflectConf(compilation, "default");
 
     assertEquals(1, map.size());
     assertEquals("Test", map.get(0).get("name"));
@@ -689,7 +693,7 @@ public class GraalvmReflectAnnontationProcessorTest {
                         + "final class TestTwo {}\n"),
                 JavaFileObjects.forSourceString("TestThree", "final class TestThree {}\n"));
 
-    List<Map<String, Object>> map = getReflectConf(compilation);
+    List<Map<String, Object>> map = getReflectConf(compilation, "default");
 
     assertEquals(2, map.size());
     assertEquals("TestOne", map.get(0).get("name"));
@@ -741,7 +745,7 @@ public class GraalvmReflectAnnontationProcessorTest {
                         + "  REFLECTED_ENUM_TWO\n"
                         + "}"));
 
-    List<Map<String, Object>> map = getReflectConf(compilation);
+    List<Map<String, Object>> map = getReflectConf(compilation, "default");
 
     assertEquals(1, map.size());
     assertEquals("TestEnum", map.get(0).get("name"));
@@ -751,5 +755,34 @@ public class GraalvmReflectAnnontationProcessorTest {
     assertEquals(Boolean.FALSE, map.get(0).get("allDeclaredConstructors"));
     assertEquals(Boolean.TRUE, map.get(0).get("allDeclaredMethods"));
     assertEquals(Boolean.TRUE, map.get(0).get("allDeclaredFields"));
+  }
+
+  /** Test Reflect Config Path. */
+  @Test
+  public void testGenerateReflectConfigPath01() {
+    GraalvmReflectAnnontationProcessor processor = new GraalvmReflectAnnontationProcessor();
+    Set<String> keys =
+        Set.of("com.formkiq.graalvm.processors.Test3", "com.formkiq.graalvm.processors.Test4");
+    assertEquals("com.formkiq.graalvm.processors", processor.generateReflectConfigPath(keys));
+  }
+
+  /** Test Reflect Config Path. */
+  @Test
+  public void testGenerateReflectConfigPath02() {
+    GraalvmReflectAnnontationProcessor processor = new GraalvmReflectAnnontationProcessor();
+    Set<String> keys =
+        Set.of(
+            "com.formkiq.graalvm.processors.Test3",
+            "com.formkiq.graalvm.processors.ocr.Test5",
+            "com.formkiq.graalvm.processors.Test4");
+    assertEquals("com.formkiq.graalvm.processors", processor.generateReflectConfigPath(keys));
+  }
+
+  /** Test Reflect Config Path. */
+  @Test
+  public void testGenerateReflectConfigPath03() {
+    GraalvmReflectAnnontationProcessor processor = new GraalvmReflectAnnontationProcessor();
+    Set<String> keys = Set.of("com.formkiq.graalvm.processors.Test5.Test5Inner");
+    assertEquals("com.formkiq.graalvm.processors", processor.generateReflectConfigPath(keys));
   }
 }

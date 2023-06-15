@@ -67,19 +67,115 @@ import javax.tools.StandardLocation;
 @SupportedSourceVersion(SourceVersion.RELEASE_11)
 public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
 
-  /** The package separator character: '.'. */
-  private static final char PACKAGE_SEPARATOR = '.';
   /** The inner class separator character: '$'. */
   private static final char INNER_CLASS_SEPARATOR = '$';
-  /** Log {@link Level}. */
-  private static final Level LOGLEVEL = Level.INFO;
   /** {@link Logger}. */
   private static final Logger LOGGER =
       Logger.getLogger(GraalvmReflectAnnontationProcessor.class.getName());
-  /** {@link List} of {@link Reflect}. */
-  private Map<String, Reflect> reflects = new HashMap<>();
+  /** Log {@link Level}. */
+  private static final Level LOGLEVEL = Level.INFO;
+  /** The package separator character: '.'. */
+  private static final char PACKAGE_SEPARATOR = '.';
   /** {@link Gson}. */
   private Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+  /** {@link List} of {@link Reflect}. */
+  private Map<String, Reflect> reflects = new HashMap<>();
+
+  private TypeElement asTypeElement(final TypeMirror typeMirror) {
+    Types typeUtils = this.processingEnv.getTypeUtils();
+    return (TypeElement) typeUtils.asElement(typeMirror);
+  }
+
+  /**
+   * Find Class Names using {@link AnnotationMirror}.
+   *
+   * @param element {@link Element}
+   * @param key {@link String}
+   * @return {@link List} {@link String}
+   */
+  private List<String> findClasses(final Element element, final String key) {
+
+    List<String> classNames = new ArrayList<>();
+
+    List<? extends AnnotationMirror> annotationMirrors = element.getAnnotationMirrors();
+
+    for (AnnotationMirror annotationMirror : annotationMirrors) {
+
+      Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues =
+          annotationMirror.getElementValues();
+
+      for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry :
+          elementValues.entrySet()) {
+
+        String simpleNameKey = entry.getKey().getSimpleName().toString();
+        Object value = entry.getValue().getValue();
+
+        if (key.equals(simpleNameKey)) {
+
+          @SuppressWarnings("unchecked")
+          List<? extends AnnotationValue> typeMirrors = (List<? extends AnnotationValue>) value;
+
+          for (AnnotationValue val : typeMirrors) {
+            String clazz = ((TypeMirror) val.getValue()).toString();
+
+            LOGGER.log(LOGLEVEL, "processing ImportedClass " + clazz);
+            processImportedClass(clazz);
+          }
+        }
+      }
+    }
+
+    return classNames;
+  }
+
+  /**
+   * Replacement for {@code Class.forName()} that also returns Class instances. Furthermore, it is
+   * also capable of resolving inner class names in Java source
+   *
+   * @param name the name of the Class
+   * @return Class instance for the supplied name
+   * @throws ClassNotFoundException if the class was not found
+   */
+  private Class<?> forName(final String name) throws ClassNotFoundException {
+
+    try {
+      return Class.forName(name);
+    } catch (ClassNotFoundException e) {
+
+      int lastDotIndex = name.lastIndexOf(PACKAGE_SEPARATOR);
+      if (lastDotIndex != -1) {
+        String innerClassName =
+            name.substring(0, lastDotIndex)
+                + INNER_CLASS_SEPARATOR
+                + name.substring(lastDotIndex + 1);
+        return forName(innerClassName);
+      }
+
+      throw e;
+    }
+  }
+
+  String generateReflectConfigPath(final Set<String> keys) {
+
+    Set<String> strings =
+        keys.stream()
+            .map(m -> removePartsContainingDotFollowedByCapital(m))
+            .filter(m -> m != null && m.length() > 1)
+            .collect(Collectors.toSet());
+
+    if (strings.isEmpty()) {
+      strings.add("default");
+    }
+    final int shortestLength = strings.stream().mapToInt(String::length).min().getAsInt();
+
+    List<String> list =
+        strings.stream()
+            .filter(s -> s.length() == shortestLength)
+            .sorted()
+            .collect(Collectors.toList());
+
+    return list.get(0);
+  }
 
   /**
    * Get ClassName from {@link Element}.
@@ -246,48 +342,6 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
   }
 
   /**
-   * Find Class Names using {@link AnnotationMirror}.
-   *
-   * @param element {@link Element}
-   * @param key {@link String}
-   * @return {@link List} {@link String}
-   */
-  private List<String> findClasses(final Element element, final String key) {
-
-    List<String> classNames = new ArrayList<>();
-
-    List<? extends AnnotationMirror> annotationMirrors = element.getAnnotationMirrors();
-
-    for (AnnotationMirror annotationMirror : annotationMirrors) {
-
-      Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues =
-          annotationMirror.getElementValues();
-
-      for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry :
-          elementValues.entrySet()) {
-
-        String simpleNameKey = entry.getKey().getSimpleName().toString();
-        Object value = entry.getValue().getValue();
-
-        if (key.equals(simpleNameKey)) {
-
-          @SuppressWarnings("unchecked")
-          List<? extends AnnotationValue> typeMirrors = (List<? extends AnnotationValue>) value;
-
-          for (AnnotationValue val : typeMirrors) {
-            String clazz = ((TypeMirror) val.getValue()).toString();
-
-            LOGGER.log(LOGLEVEL, "processing ImportedClass " + clazz);
-            processImportedClass(clazz);
-          }
-        }
-      }
-    }
-
-    return classNames;
-  }
-
-  /**
    * Process Importing of Files.
    *
    * @param element {@link Element}
@@ -319,114 +373,6 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
           }
         }
       }
-    }
-  }
-
-  /**
-   * Processing classes with 'ReflectableClasses' and 'ReflectableClass' annotation.
-   *
-   * @param roundEnv {@link RoundEnvironment}
-   */
-  private void processReflectableClasses(final RoundEnvironment roundEnv) {
-
-    for (Element element : roundEnv.getElementsAnnotatedWith(ReflectableClasses.class)) {
-
-      String className = getClassName(element);
-      LOGGER.log(LOGLEVEL, "processing 'ReflectableClasses' annotation on class " + className);
-
-      ReflectableClasses[] reflectables = element.getAnnotationsByType(ReflectableClasses.class);
-
-      for (ReflectableClasses reflectable : reflectables) {
-
-        ReflectableClass[] classes = reflectable.value();
-        for (ReflectableClass clazz : classes) {
-          processReflectableClass(clazz);
-        }
-      }
-    }
-
-    Set<? extends Element> reflectableClasses =
-        roundEnv.getElementsAnnotatedWithAny(
-            Set.of(ReflectableClass.class, ReflectableClass.ReflectableClasses.class));
-
-    for (Element element : reflectableClasses) {
-      String className = getClassName(element);
-      LOGGER.log(LOGLEVEL, "processing 'ReflectableClasses' annotation on class " + className);
-
-      ReflectableClass[] reflectables = element.getAnnotationsByType(ReflectableClass.class);
-      for (ReflectableClass clazz : reflectables) {
-        processReflectableClass(clazz);
-      }
-    }
-  }
-
-  /**
-   * Processing classes with 'ReflectableClass' annotation.
-   *
-   * @param reflectable {@link ReflectableClass}
-   */
-  private void processReflectableClass(final ReflectableClass reflectable) {
-
-    String className = null;
-    try {
-      reflectable.className();
-    } catch (MirroredTypeException e) {
-
-      TypeMirror typeMirror = e.getTypeMirror();
-      TypeElement asTypeElement = asTypeElement(typeMirror);
-
-      className = asTypeElement.getQualifiedName().toString();
-
-      try {
-        className = forName(className).getName();
-      } catch (ClassNotFoundException ee) {
-        LOGGER.log(Level.WARNING, "cannot find class " + className);
-      }
-    }
-
-    Reflect reflect = getReflect(className);
-    reflect = processClass(reflect, reflectable);
-
-    for (ReflectableField field : reflectable.fields()) {
-      LOGGER.log(LOGLEVEL, "adding Field " + field.name() + " to " + className);
-      reflect.addField(field.name(), field.allowWrite(), field.allowUnsafeAccess());
-    }
-
-    for (ReflectableMethod method : reflectable.methods()) {
-      LOGGER.log(LOGLEVEL, "adding Method " + method.name() + " to " + className);
-      reflect.addMethod(method.name(), Arrays.asList(method.parameterTypes()));
-    }
-  }
-
-  private TypeElement asTypeElement(final TypeMirror typeMirror) {
-    Types typeUtils = this.processingEnv.getTypeUtils();
-    return (TypeElement) typeUtils.asElement(typeMirror);
-  }
-
-  /**
-   * Replacement for {@code Class.forName()} that also returns Class instances. Furthermore, it is
-   * also capable of resolving inner class names in Java source
-   *
-   * @param name the name of the Class
-   * @return Class instance for the supplied name
-   * @throws ClassNotFoundException if the class was not found
-   */
-  private Class<?> forName(final String name) throws ClassNotFoundException {
-
-    try {
-      return Class.forName(name);
-    } catch (ClassNotFoundException e) {
-
-      int lastDotIndex = name.lastIndexOf(PACKAGE_SEPARATOR);
-      if (lastDotIndex != -1) {
-        String innerClassName =
-            name.substring(0, lastDotIndex)
-                + INNER_CLASS_SEPARATOR
-                + name.substring(lastDotIndex + 1);
-        return forName(innerClassName);
-      }
-
-      throw e;
     }
   }
 
@@ -491,15 +437,102 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
     }
   }
 
+  /**
+   * Processing classes with 'ReflectableClass' annotation.
+   *
+   * @param reflectable {@link ReflectableClass}
+   */
+  private void processReflectableClass(final ReflectableClass reflectable) {
+
+    String className = null;
+    try {
+      reflectable.className();
+    } catch (MirroredTypeException e) {
+
+      TypeMirror typeMirror = e.getTypeMirror();
+      TypeElement asTypeElement = asTypeElement(typeMirror);
+
+      className = asTypeElement.getQualifiedName().toString();
+
+      try {
+        className = forName(className).getName();
+      } catch (ClassNotFoundException ee) {
+        LOGGER.log(Level.WARNING, "cannot find class " + className);
+      }
+    }
+
+    Reflect reflect = getReflect(className);
+    reflect = processClass(reflect, reflectable);
+
+    for (ReflectableField field : reflectable.fields()) {
+      LOGGER.log(LOGLEVEL, "adding Field " + field.name() + " to " + className);
+      reflect.addField(field.name(), field.allowWrite(), field.allowUnsafeAccess());
+    }
+
+    for (ReflectableMethod method : reflectable.methods()) {
+      LOGGER.log(LOGLEVEL, "adding Method " + method.name() + " to " + className);
+      reflect.addMethod(method.name(), Arrays.asList(method.parameterTypes()));
+    }
+  }
+
+  /**
+   * Processing classes with 'ReflectableClasses' and 'ReflectableClass' annotation.
+   *
+   * @param roundEnv {@link RoundEnvironment}
+   */
+  private void processReflectableClasses(final RoundEnvironment roundEnv) {
+
+    for (Element element : roundEnv.getElementsAnnotatedWith(ReflectableClasses.class)) {
+
+      String className = getClassName(element);
+      LOGGER.log(LOGLEVEL, "processing 'ReflectableClasses' annotation on class " + className);
+
+      ReflectableClasses[] reflectables = element.getAnnotationsByType(ReflectableClasses.class);
+
+      for (ReflectableClasses reflectable : reflectables) {
+
+        ReflectableClass[] classes = reflectable.value();
+        for (ReflectableClass clazz : classes) {
+          processReflectableClass(clazz);
+        }
+      }
+    }
+
+    Set<? extends Element> reflectableClasses =
+        roundEnv.getElementsAnnotatedWithAny(
+            Set.of(ReflectableClass.class, ReflectableClass.ReflectableClasses.class));
+
+    for (Element element : reflectableClasses) {
+      String className = getClassName(element);
+      LOGGER.log(LOGLEVEL, "processing 'ReflectableClasses' annotation on class " + className);
+
+      ReflectableClass[] reflectables = element.getAnnotationsByType(ReflectableClass.class);
+      for (ReflectableClass clazz : reflectables) {
+        processReflectableClass(clazz);
+      }
+    }
+  }
+
+  private String removePartsContainingDotFollowedByCapital(final String input) {
+    return Arrays.stream(input.split("\\."))
+        .filter(part -> !part.matches("\\p{Upper}.*"))
+        .collect(Collectors.joining("."));
+  }
+
   /** Write Output File. */
   private void writeOutput() {
 
     try {
 
+      String name = generateReflectConfigPath(this.reflects.keySet());
+
       FileObject file =
           this.processingEnv
               .getFiler()
-              .createResource(StandardLocation.CLASS_OUTPUT, "", "META-INF/graal/reflect.json");
+              .createResource(
+                  StandardLocation.CLASS_OUTPUT,
+                  "",
+                  "META-INF/native-image/" + name + "/reflect-config.json");
 
       List<Map<String, Object>> data =
           this.reflects.values().stream().map(r -> r.data()).collect(Collectors.toList());
