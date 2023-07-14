@@ -47,6 +47,7 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.MirroredTypeException;
@@ -194,7 +195,14 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
         break;
       case ENUM:
       case CLASS:
-        className = ((TypeElement) element).getQualifiedName().toString();
+        TypeElement te = (TypeElement) element;
+
+        if (te.getEnclosingElement().getKind().equals(ElementKind.CLASS)) {
+          className = te.getEnclosingElement().toString() + "$" + te.getSimpleName();
+        } else {
+          className = te.getQualifiedName().toString();
+        }
+
         break;
       default:
         break;
