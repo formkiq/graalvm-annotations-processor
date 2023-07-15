@@ -9,7 +9,7 @@ plugins {
 }
 
 group 'com.formkiq'
-version '1.4.1-SNAPSHOT'
+version '1.4.1'
 
 dependencies {
 	annotationProcessor group: 'com.google.auto.service', name: 'auto-service', version: '1.0.1'
@@ -123,8 +123,8 @@ publishing {
 		    username project.repoUser
 		    password project.repoPassword
 		  }
-		  // url "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-		  url "https://oss.sonatype.org/content/repositories/snapshots/"
+		  url "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+		  // url "https://oss.sonatype.org/content/repositories/snapshots/"
 		}
 	}
 }
