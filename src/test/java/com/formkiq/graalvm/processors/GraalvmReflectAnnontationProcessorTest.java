@@ -386,6 +386,53 @@ public class GraalvmReflectAnnontationProcessorTest {
     assertNull(map.get(0).get("methods"));
   }
 
+  /**
+   * testInnerClassAnnotation.
+   *
+   * @throws IOException IOException
+   */
+  @Test
+  public void testInnerClassAnnotation() throws IOException {
+    Compilation compilation =
+        javac()
+            .withProcessors(new GraalvmReflectAnnontationProcessor())
+            .compile(
+                JavaFileObjects.forSourceString(
+                    "Test",
+                    "package test;\n"
+                        + "import com.formkiq.graalvm.annotations.Reflectable;\n"
+                        + "\n"
+                        + "@Reflectable\n"
+                        + "final class Test6 {\n"
+                        + "@Reflectable\n"
+                        + "  public static final class Data {}\n"
+                        + "}\n"));
+
+    List<Map<String, Object>> map = getReflectConf(compilation, "test");
+    assertEquals(2, map.size());
+
+    int i = 0;
+    assertEquals("test.Test6", map.get(i).get("name"));
+    assertEquals(Boolean.TRUE, map.get(i).get("allPublicConstructors"));
+    assertEquals(Boolean.TRUE, map.get(i).get("allPublicMethods"));
+    assertEquals(Boolean.TRUE, map.get(i).get("allPublicFields"));
+    assertEquals(Boolean.FALSE, map.get(i).get("allDeclaredConstructors"));
+    assertEquals(Boolean.TRUE, map.get(i).get("allDeclaredMethods"));
+    assertEquals(Boolean.TRUE, map.get(i).get("allDeclaredFields"));
+    assertNull(map.get(i).get("fields"));
+    assertNull(map.get(i++).get("methods"));
+
+    assertEquals("test.Test6$Data", map.get(i).get("name"));
+    assertEquals(Boolean.TRUE, map.get(i).get("allPublicConstructors"));
+    assertEquals(Boolean.TRUE, map.get(i).get("allPublicMethods"));
+    assertEquals(Boolean.TRUE, map.get(i).get("allPublicFields"));
+    assertEquals(Boolean.FALSE, map.get(i).get("allDeclaredConstructors"));
+    assertEquals(Boolean.TRUE, map.get(i).get("allDeclaredMethods"));
+    assertEquals(Boolean.TRUE, map.get(i).get("allDeclaredFields"));
+    assertNull(map.get(i).get("fields"));
+    assertNull(map.get(i++).get("methods"));
+  }
+
   @SuppressWarnings({"unchecked", "resource"})
   private List<Map<String, Object>> getReflectConf(
       final Compilation compilation, final String filename)
