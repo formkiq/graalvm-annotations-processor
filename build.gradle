@@ -9,7 +9,7 @@ plugins {
 }
 
 group 'com.formkiq'
-version '1.4.1'
+version '1.4.2'
 
 dependencies {
 	annotationProcessor group: 'com.google.auto.service', name: 'auto-service', version: '1.0.1'

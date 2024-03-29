@@ -184,7 +184,7 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
    * @param element {@link Element}
    * @return {@link String}s
    */
-  private String getClassName(final Element element) {
+  private String getClassNameByType(final Element element) {
     String className = null;
 
     switch (element.getKind()) {
@@ -197,10 +197,22 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
       case CLASS:
         TypeElement te = (TypeElement) element;
 
-        if (te.getEnclosingElement().getKind().equals(ElementKind.CLASS)) {
-          className = te.getEnclosingElement().toString() + "$" + te.getSimpleName();
-        } else {
-          className = te.getQualifiedName().toString();
+        List<String> simpleNames = new ArrayList<>();
+        Element result = element;
+        while (result != null && ElementKind.CLASS.equals(result.getKind())) {
+          simpleNames.add(0, result.getSimpleName().toString());
+          result = result.getEnclosingElement();
+        }
+
+        className = te.getQualifiedName().toString();
+
+        if (!simpleNames.isEmpty()) {
+          String e = element.getEnclosingElement().toString();
+
+          int pos = e.indexOf(simpleNames.get(0));
+          if (pos > 0) {
+            className = e.substring(0, pos) + simpleNames.stream().collect(Collectors.joining("$"));
+          }
         }
 
         break;
@@ -393,7 +405,7 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
 
     for (Element element : roundEnv.getElementsAnnotatedWith(Reflectable.class)) {
 
-      String className = getClassName(element);
+      String className = getClassNameByType(element);
       LOGGER.log(LOGLEVEL, "processing 'Reflectable' annotation on class " + className);
 
       Reflectable[] reflectables = element.getAnnotationsByType(Reflectable.class);
@@ -492,7 +504,7 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
 
     for (Element element : roundEnv.getElementsAnnotatedWith(ReflectableClasses.class)) {
 
-      String className = getClassName(element);
+      String className = getClassNameByType(element);
       LOGGER.log(LOGLEVEL, "processing 'ReflectableClasses' annotation on class " + className);
 
       ReflectableClasses[] reflectables = element.getAnnotationsByType(ReflectableClasses.class);
@@ -511,7 +523,7 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
             Set.of(ReflectableClass.class, ReflectableClass.ReflectableClasses.class));
 
     for (Element element : reflectableClasses) {
-      String className = getClassName(element);
+      String className = getClassNameByType(element);
       LOGGER.log(LOGLEVEL, "processing 'ReflectableClasses' annotation on class " + className);
 
       ReflectableClass[] reflectables = element.getAnnotationsByType(ReflectableClass.class);

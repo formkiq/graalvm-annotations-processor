@@ -387,12 +387,12 @@ public class GraalvmReflectAnnontationProcessorTest {
   }
 
   /**
-   * testInnerClassAnnotation.
+   * testInnerClassAnnotation 01.
    *
    * @throws IOException IOException
    */
   @Test
-  public void testInnerClassAnnotation() throws IOException {
+  public void testInnerClassAnnotation01() throws IOException {
     Compilation compilation =
         javac()
             .withProcessors(new GraalvmReflectAnnontationProcessor())
@@ -431,6 +431,82 @@ public class GraalvmReflectAnnontationProcessorTest {
     assertEquals(Boolean.TRUE, map.get(i).get("allDeclaredFields"));
     assertNull(map.get(i).get("fields"));
     assertNull(map.get(i++).get("methods"));
+  }
+
+  /**
+   * testInnerClassAnnotation 02.
+   *
+   * @throws IOException IOException
+   */
+  @Test
+  public void testInnerClassAnnotation02() throws IOException {
+    Compilation compilation =
+        javac()
+            .withProcessors(new GraalvmReflectAnnontationProcessor())
+            .compile(
+                JavaFileObjects.forSourceString(
+                    "Test",
+                    "package test;\n"
+                        + "import com.formkiq.graalvm.annotations.Reflectable;\n"
+                        + "\n"
+                        + "@Reflectable\n"
+                        + "final class Test6 {\n"
+                        + "@Reflectable\n"
+                        + "  public static final class Data0 {"
+                        + "@Reflectable\n"
+                        + "  public static final class Data1 {"
+                        + "}\n"
+                        + "}\n"
+                        + "}\n"));
+
+    final int expected = 3;
+    List<Map<String, Object>> map = getReflectConf(compilation, "test");
+    assertEquals(expected, map.size());
+
+    int i = 0;
+    assertEquals("test.Test6", map.get(i++).get("name"));
+    assertEquals("test.Test6$Data0", map.get(i++).get("name"));
+    assertEquals("test.Test6$Data0$Data1", map.get(i++).get("name"));
+  }
+
+  /**
+   * testInnerClassAnnotation 03.
+   *
+   * @throws IOException IOException
+   */
+  @Test
+  public void testInnerClassAnnotation03() throws IOException {
+    Compilation compilation =
+        javac()
+            .withProcessors(new GraalvmReflectAnnontationProcessor())
+            .compile(
+                JavaFileObjects.forSourceString(
+                    "Test",
+                    "package test;\n"
+                        + "import com.formkiq.graalvm.annotations.Reflectable;\n"
+                        + "\n"
+                        + "@Reflectable\n"
+                        + "final class Test6 {\n"
+                        + "@Reflectable\n"
+                        + "  public static final class Data0 {"
+                        + "@Reflectable\n"
+                        + "  public static final class Data1 {"
+                        + "@Reflectable\n"
+                        + "  public static final class Data2 {"
+                        + "}\n"
+                        + "}\n"
+                        + "}\n"
+                        + "}\n"));
+
+    final int expected = 4;
+    List<Map<String, Object>> map = getReflectConf(compilation, "test");
+    assertEquals(expected, map.size());
+
+    int i = 0;
+    assertEquals("test.Test6", map.get(i++).get("name"));
+    assertEquals("test.Test6$Data0", map.get(i++).get("name"));
+    assertEquals("test.Test6$Data0$Data1", map.get(i++).get("name"));
+    assertEquals("test.Test6$Data0$Data1$Data2", map.get(i++).get("name"));
   }
 
   @SuppressWarnings({"unchecked", "resource"})
