@@ -2,7 +2,7 @@
  * Copyright [2020] FormKiQ Inc. Licensed under the Apache License, Version 2.0 (the "License"); you
  * may not use this file except in compliance with the License. You may obtain a copy of the License
  * at
- *
+ * 
  * <p>http://www.apache.org/licenses/LICENSE-2.0
  *
  * <p>Unless required by applicable law or agreed to in writing, software distributed under the
@@ -34,8 +34,8 @@ public class Reflect {
    * @param allowUnsafeAccess boolean
    */
   @SuppressWarnings("unchecked")
-  public void addField(
-      final String fieldName, final boolean allowWrite, final boolean allowUnsafeAccess) {
+  public void addField(final String fieldName, final boolean allowWrite,
+      final boolean allowUnsafeAccess) {
 
     if (!this.data.containsKey("methods")) {
       this.data.put("methods", new ArrayList<>());

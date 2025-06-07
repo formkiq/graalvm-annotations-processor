@@ -16,6 +16,7 @@
 		<allow pkg="java.nio.file" />
 		<allow pkg="java.util" />
 		<allow pkg="java.lang.reflect" />
+		<allow pkg="java.nio.charset" />
 		
 		<allow pkg="javax.annotation.processing" />
 		<allow pkg="javax.lang.model" />
