@@ -2,7 +2,7 @@
  * Copyright [2020] FormKiQ Inc. Licensed under the Apache License, Version 2.0 (the "License"); you
  * may not use this file except in compliance with the License. You may obtain a copy of the License
  * at
- *
+ * 
  * <p>http://www.apache.org/licenses/LICENSE-2.0
  *
  * <p>Unless required by applicable law or agreed to in writing, software distributed under the
@@ -48,16 +48,13 @@ public class GraalvmReflectAnnontationProcessorTest {
   @SuppressWarnings("unchecked")
   @Test
   public void testReflectableImport01() throws IOException {
-    Compilation compilation =
-        javac()
-            .withProcessors(new GraalvmReflectAnnontationProcessor())
-            .compile(
-                JavaFileObjects.forSourceString(
-                    "Test",
-                    "package test;\n"
-                        + "import com.formkiq.graalvm.annotations.*;\n"
-                        + "@ReflectableImport(classes=com.formkiq.graalvm.processors.Test3.class)\n"
-                        + "public class Test { }\n"));
+    Compilation compilation = javac().withProcessors(new GraalvmReflectAnnontationProcessor())
+        .compile(JavaFileObjects.forSourceString("Test", """
+            package test;
+            import com.formkiq.graalvm.annotations.*;
+            @ReflectableImport(classes=com.formkiq.graalvm.processors.Test3.class)
+            public class Test { }
+            """));
 
     List<Map<String, Object>> map = getReflectConf(compilation, "com.formkiq.graalvm.processors");
 
@@ -90,21 +87,18 @@ public class GraalvmReflectAnnontationProcessorTest {
   @SuppressWarnings("unchecked")
   @Test
   public void testReflectableClasses01() throws IOException {
-    Compilation compilation =
-        javac()
-            .withProcessors(new GraalvmReflectAnnontationProcessor())
-            .compile(
-                JavaFileObjects.forSourceString(
-                    "Test",
-                    "package test;\n"
-                        + "import com.formkiq.graalvm.annotations.*;\n"
-                        + "@ReflectableClasses({@ReflectableClass("
-                        + "className=com.formkiq.graalvm.processors.Test4.class,"
-                        + "allDeclaredConstructors=false,\n"
-                        + "    fields = {@ReflectableField(allowWrite = true, name = \"foo\")},\n"
-                        + "    methods = {@ReflectableMethod(name = \"bar\", "
-                        + "parameterTypes = {\"java.lang.String\"})})})\n"
-                        + "public class Test { }\n"));
+    Compilation compilation = javac().withProcessors(new GraalvmReflectAnnontationProcessor())
+        .compile(JavaFileObjects.forSourceString("Test", """
+            package test;
+            import com.formkiq.graalvm.annotations.*;
+            @ReflectableClasses({@ReflectableClass(\
+            className=com.formkiq.graalvm.processors.Test4.class,\
+            allDeclaredConstructors=false,
+                fields = {@ReflectableField(allowWrite = true, name = "foo")},
+                methods = {@ReflectableMethod(name = "bar", \
+            parameterTypes = {"java.lang.String"})})})
+            public class Test { }
+            """));
 
     List<Map<String, Object>> map = getReflectConf(compilation, "com.formkiq.graalvm.processors");
 
@@ -137,21 +131,18 @@ public class GraalvmReflectAnnontationProcessorTest {
   @SuppressWarnings("unchecked")
   @Test
   public void testReflectableClass01() throws IOException {
-    Compilation compilation =
-        javac()
-            .withProcessors(new GraalvmReflectAnnontationProcessor())
-            .compile(
-                JavaFileObjects.forSourceString(
-                    "Test",
-                    "package test;\n"
-                        + "import com.formkiq.graalvm.annotations.*;\n"
-                        + "@ReflectableClass("
-                        + "className=com.formkiq.graalvm.processors.Test4.class,"
-                        + "allDeclaredConstructors=false,\n"
-                        + "    fields = {@ReflectableField(allowWrite = true, name = \"foo\")},\n"
-                        + "    methods = {@ReflectableMethod(name = \"bar\", "
-                        + "parameterTypes = {\"java.lang.String\"})})\n"
-                        + "public class Test { }\n"));
+    Compilation compilation = javac().withProcessors(new GraalvmReflectAnnontationProcessor())
+        .compile(JavaFileObjects.forSourceString("Test", """
+            package test;
+            import com.formkiq.graalvm.annotations.*;
+            @ReflectableClass(\
+            className=com.formkiq.graalvm.processors.Test4.class,\
+            allDeclaredConstructors=false,
+                fields = {@ReflectableField(allowWrite = true, name = "foo")},
+                methods = {@ReflectableMethod(name = "bar", \
+            parameterTypes = {"java.lang.String"})})
+            public class Test { }
+            """));
 
     List<Map<String, Object>> map = getReflectConf(compilation, "com.formkiq.graalvm.processors");
 
@@ -185,22 +176,19 @@ public class GraalvmReflectAnnontationProcessorTest {
   @SuppressWarnings("unchecked")
   @Test
   public void testReflectableClass02() throws IOException {
-    Compilation compilation =
-        javac()
-            .withProcessors(new GraalvmReflectAnnontationProcessor())
-            .compile(
-                JavaFileObjects.forSourceString(
-                    "Test",
-                    "package test;\n"
-                        + "import com.formkiq.graalvm.annotations.*;\n"
-                        + "@ReflectableClass("
-                        + "className=com.formkiq.graalvm.processors.Test4.class,"
-                        + "allDeclaredConstructors=false,\n"
-                        + "    fields = {@ReflectableField(allowUnsafeAccess = true, "
-                        + "allowWrite = true, name = \"foo\")},\n"
-                        + "    methods = {@ReflectableMethod(name = \"bar\", "
-                        + "parameterTypes = {\"java.lang.String\"})})\n"
-                        + "public class Test { }\n"));
+    Compilation compilation = javac().withProcessors(new GraalvmReflectAnnontationProcessor())
+        .compile(JavaFileObjects.forSourceString("Test", """
+            package test;
+            import com.formkiq.graalvm.annotations.*;
+            @ReflectableClass(\
+            className=com.formkiq.graalvm.processors.Test4.class,\
+            allDeclaredConstructors=false,
+                fields = {@ReflectableField(allowUnsafeAccess = true, \
+            allowWrite = true, name = "foo")},
+                methods = {@ReflectableMethod(name = "bar", \
+            parameterTypes = {"java.lang.String"})})
+            public class Test { }
+            """));
 
     List<Map<String, Object>> map = getReflectConf(compilation, "com.formkiq.graalvm.processors");
 
@@ -220,18 +208,15 @@ public class GraalvmReflectAnnontationProcessorTest {
    */
   @Test
   public void testReflectableClass03() throws IOException {
-    Compilation compilation =
-        javac()
-            .withProcessors(new GraalvmReflectAnnontationProcessor())
-            .compile(
-                JavaFileObjects.forSourceString(
-                    "Test",
-                    "package test;\n"
-                        + "import com.formkiq.graalvm.annotations.*;\n"
-                        + "@ReflectableClass("
-                        + "className=com.formkiq.graalvm.processors.Test5.Test5Inner.class"
-                        + ")\n"
-                        + "public class Test { }\n"));
+    Compilation compilation = javac().withProcessors(new GraalvmReflectAnnontationProcessor())
+        .compile(JavaFileObjects.forSourceString("Test", """
+            package test;
+            import com.formkiq.graalvm.annotations.*;
+            @ReflectableClass(\
+            className=com.formkiq.graalvm.processors.Test5.Test5Inner.class\
+            )
+            public class Test { }
+            """));
 
     List<Map<String, Object>> map = getReflectConf(compilation, "com.formkiq.graalvm.processors");
 
@@ -252,21 +237,18 @@ public class GraalvmReflectAnnontationProcessorTest {
    */
   @Test
   public void testReflectableClass04() throws IOException {
-    Compilation compilation =
-        javac()
-            .withProcessors(new GraalvmReflectAnnontationProcessor())
-            .compile(
-                JavaFileObjects.forSourceString(
-                    "Test",
-                    "package test;\n"
-                        + "import com.formkiq.graalvm.annotations.*;\n"
-                        + "@ReflectableClass("
-                        + "className=com.formkiq.graalvm.processors.Test5.Test5Inner.class"
-                        + ")\n"
-                        + "@ReflectableClass("
-                        + "className=com.formkiq.graalvm.processors.Test4.class"
-                        + ")\n"
-                        + "public class Test { }\n"));
+    Compilation compilation = javac().withProcessors(new GraalvmReflectAnnontationProcessor())
+        .compile(JavaFileObjects.forSourceString("Test", """
+            package test;
+            import com.formkiq.graalvm.annotations.*;
+            @ReflectableClass(\
+            className=com.formkiq.graalvm.processors.Test5.Test5Inner.class\
+            )
+            @ReflectableClass(\
+            className=com.formkiq.graalvm.processors.Test4.class\
+            )
+            public class Test { }
+            """));
 
     List<Map<String, Object>> map = getReflectConf(compilation, "com.formkiq.graalvm.processors");
 
@@ -296,17 +278,14 @@ public class GraalvmReflectAnnontationProcessorTest {
   @SuppressWarnings("unchecked")
   @Test
   public void testReflectableImportFile01() throws IOException {
-    Compilation compilation =
-        javac()
-            .withProcessors(new GraalvmReflectAnnontationProcessor())
-            .compile(
-                JavaFileObjects.forSourceString(
-                    "Test",
-                    "package test;\n"
-                        + "import com.formkiq.graalvm.annotations.*;\n"
-                        + "@Reflectable\n"
-                        + "@ReflectableImport(files=\"test.json\")\n"
-                        + "final class Test { }\n"));
+    Compilation compilation = javac().withProcessors(new GraalvmReflectAnnontationProcessor())
+        .compile(JavaFileObjects.forSourceString("Test", """
+            package test;
+            import com.formkiq.graalvm.annotations.*;
+            @Reflectable
+            @ReflectableImport(files="test.json")
+            final class Test { }
+            """));
 
     List<Map<String, Object>> map = getReflectConf(compilation, "test");
 
@@ -345,10 +324,8 @@ public class GraalvmReflectAnnontationProcessorTest {
   /** Test with no annontations. */
   @Test
   public void testNoOpWithNoAnnotations() {
-    Compilation compilation =
-        javac()
-            .withProcessors(new GraalvmReflectAnnontationProcessor())
-            .compile(JavaFileObjects.forSourceString("Test", "final class Test {}\n"));
+    Compilation compilation = javac().withProcessors(new GraalvmReflectAnnontationProcessor())
+        .compile(JavaFileObjects.forSourceString("Test", "final class Test {}\n"));
     assertThat(compilation).succeeded();
   }
 
@@ -359,17 +336,14 @@ public class GraalvmReflectAnnontationProcessorTest {
    */
   @Test
   public void testClassAnnotation() throws IOException {
-    Compilation compilation =
-        javac()
-            .withProcessors(new GraalvmReflectAnnontationProcessor())
-            .compile(
-                JavaFileObjects.forSourceString(
-                    "Test",
-                    "package test;\n"
-                        + "import com.formkiq.graalvm.annotations.Reflectable;\n"
-                        + "\n"
-                        + "@Reflectable\n"
-                        + "final class Test { }\n"));
+    Compilation compilation = javac().withProcessors(new GraalvmReflectAnnontationProcessor())
+        .compile(JavaFileObjects.forSourceString("Test", """
+            package test;
+            import com.formkiq.graalvm.annotations.Reflectable;
+
+            @Reflectable
+            final class Test { }
+            """));
 
     List<Map<String, Object>> map = getReflectConf(compilation, "test");
     assertEquals(1, map.size());
@@ -392,20 +366,17 @@ public class GraalvmReflectAnnontationProcessorTest {
    */
   @Test
   public void testInnerClassAnnotation01() throws IOException {
-    Compilation compilation =
-        javac()
-            .withProcessors(new GraalvmReflectAnnontationProcessor())
-            .compile(
-                JavaFileObjects.forSourceString(
-                    "Test",
-                    "package test;\n"
-                        + "import com.formkiq.graalvm.annotations.Reflectable;\n"
-                        + "\n"
-                        + "@Reflectable\n"
-                        + "final class Test6 {\n"
-                        + "@Reflectable\n"
-                        + "  public static final class Data {}\n"
-                        + "}\n"));
+    Compilation compilation = javac().withProcessors(new GraalvmReflectAnnontationProcessor())
+        .compile(JavaFileObjects.forSourceString("Test", """
+            package test;
+            import com.formkiq.graalvm.annotations.Reflectable;
+
+            @Reflectable
+            final class Test6 {
+            @Reflectable
+              public static final class Data {}
+            }
+            """));
 
     List<Map<String, Object>> map = getReflectConf(compilation, "test");
     assertEquals(2, map.size());
@@ -439,24 +410,21 @@ public class GraalvmReflectAnnontationProcessorTest {
    */
   @Test
   public void testInnerClassAnnotation02() throws IOException {
-    Compilation compilation =
-        javac()
-            .withProcessors(new GraalvmReflectAnnontationProcessor())
-            .compile(
-                JavaFileObjects.forSourceString(
-                    "Test",
-                    "package test;\n"
-                        + "import com.formkiq.graalvm.annotations.Reflectable;\n"
-                        + "\n"
-                        + "@Reflectable\n"
-                        + "final class Test6 {\n"
-                        + "@Reflectable\n"
-                        + "  public static final class Data0 {"
-                        + "@Reflectable\n"
-                        + "  public static final class Data1 {"
-                        + "}\n"
-                        + "}\n"
-                        + "}\n"));
+    Compilation compilation = javac().withProcessors(new GraalvmReflectAnnontationProcessor())
+        .compile(JavaFileObjects.forSourceString("Test", """
+            package test;
+            import com.formkiq.graalvm.annotations.Reflectable;
+
+            @Reflectable
+            final class Test6 {
+            @Reflectable
+              public static final class Data0 {\
+            @Reflectable
+              public static final class Data1 {\
+            }
+            }
+            }
+            """));
 
     final int expected = 3;
     List<Map<String, Object>> map = getReflectConf(compilation, "test");
@@ -475,27 +443,24 @@ public class GraalvmReflectAnnontationProcessorTest {
    */
   @Test
   public void testInnerClassAnnotation03() throws IOException {
-    Compilation compilation =
-        javac()
-            .withProcessors(new GraalvmReflectAnnontationProcessor())
-            .compile(
-                JavaFileObjects.forSourceString(
-                    "Test",
-                    "package test;\n"
-                        + "import com.formkiq.graalvm.annotations.Reflectable;\n"
-                        + "\n"
-                        + "@Reflectable\n"
-                        + "final class Test6 {\n"
-                        + "@Reflectable\n"
-                        + "  public static final class Data0 {"
-                        + "@Reflectable\n"
-                        + "  public static final class Data1 {"
-                        + "@Reflectable\n"
-                        + "  public static final class Data2 {"
-                        + "}\n"
-                        + "}\n"
-                        + "}\n"
-                        + "}\n"));
+    Compilation compilation = javac().withProcessors(new GraalvmReflectAnnontationProcessor())
+        .compile(JavaFileObjects.forSourceString("Test", """
+            package test;
+            import com.formkiq.graalvm.annotations.Reflectable;
+
+            @Reflectable
+            final class Test6 {
+            @Reflectable
+              public static final class Data0 {\
+            @Reflectable
+              public static final class Data1 {\
+            @Reflectable
+              public static final class Data2 {\
+            }
+            }
+            }
+            }
+            """));
 
     final int expected = 4;
     List<Map<String, Object>> map = getReflectConf(compilation, "test");
@@ -508,14 +473,10 @@ public class GraalvmReflectAnnontationProcessorTest {
     assertEquals("test.Test6$Data0$Data1$Data2", map.get(i).get("name"));
   }
 
-  @SuppressWarnings({"unchecked"})
-  private List<Map<String, Object>> getReflectConf(
-      final Compilation compilation, final String filename)
-      throws JsonSyntaxException, JsonIOException, IOException {
-    Optional<JavaFileObject> file =
-        compilation.generatedFile(
-            StandardLocation.CLASS_OUTPUT,
-            "META-INF/native-image/" + filename + "/reflect-config.json");
+  private List<Map<String, Object>> getReflectConf(final Compilation compilation,
+      final String filename) throws JsonSyntaxException, JsonIOException, IOException {
+    Optional<JavaFileObject> file = compilation.generatedFile(StandardLocation.CLASS_OUTPUT,
+        "META-INF/native-image/" + filename + "/reflect-config.json");
 
     assertTrue(file.isPresent());
     List<Map<String, Object>> list = this.gson.fromJson(file.get().openReader(false), List.class);
@@ -532,22 +493,19 @@ public class GraalvmReflectAnnontationProcessorTest {
    */
   @Test
   public void testClassAnnotationWithSettings() throws IOException {
-    Compilation compilation =
-        javac()
-            .withProcessors(new GraalvmReflectAnnontationProcessor())
-            .compile(
-                JavaFileObjects.forSourceString(
-                    "Test",
-                    "import com.formkiq.graalvm.annotations.Reflectable;\n"
-                        + "\n"
-                        + "@Reflectable(\n"
-                        + "  allPublicConstructors = false,\n"
-                        + "  allPublicMethods = false,\n"
-                        + "  allPublicFields = false,\n"
-                        + "  allDeclaredConstructors = true,\n"
-                        + "  allDeclaredMethods = true,\n"
-                        + "  allDeclaredFields = true)\n"
-                        + "final class Test {}\n"));
+    Compilation compilation = javac().withProcessors(new GraalvmReflectAnnontationProcessor())
+        .compile(JavaFileObjects.forSourceString("Test", """
+            import com.formkiq.graalvm.annotations.Reflectable;
+
+            @Reflectable(
+              allPublicConstructors = false,
+              allPublicMethods = false,
+              allPublicFields = false,
+              allDeclaredConstructors = true,
+              allDeclaredMethods = true,
+              allDeclaredFields = true)
+            final class Test {}
+            """));
 
     List<Map<String, Object>> map = getReflectConf(compilation, "default");
 
@@ -572,21 +530,18 @@ public class GraalvmReflectAnnontationProcessorTest {
   @SuppressWarnings("unchecked")
   @Test
   public void testConstructorAnnotations() throws IOException {
-    Compilation compilation =
-        javac()
-            .withProcessors(new GraalvmReflectAnnontationProcessor())
-            .compile(
-                JavaFileObjects.forSourceString(
-                    "Test",
-                    "import com.formkiq.graalvm.annotations.Reflectable;\n"
-                        + "import java.util.*;\n"
-                        + "\n"
-                        + "final class Test {\n"
-                        + "  @Reflectable\n"
-                        + "  public Test() {}\n"
-                        + "  @Reflectable\n"
-                        + "  public Test(int foo, List<String> bar) {}\n"
-                        + "}\n"));
+    Compilation compilation = javac().withProcessors(new GraalvmReflectAnnontationProcessor())
+        .compile(JavaFileObjects.forSourceString("Test", """
+            import com.formkiq.graalvm.annotations.Reflectable;
+            import java.util.*;
+
+            final class Test {
+              @Reflectable
+              public Test() {}
+              @Reflectable
+              public Test(int foo, List<String> bar) {}
+            }
+            """));
 
     List<Map<String, Object>> map = getReflectConf(compilation, "default");
 
@@ -609,8 +564,7 @@ public class GraalvmReflectAnnontationProcessorTest {
     assertEquals("<init>", methods.get(1).get("name"));
     assertEquals(2, ((List<String>) methods.get(1).get("parameterTypes")).size());
     assertEquals("int", ((List<String>) methods.get(1).get("parameterTypes")).get(0));
-    assertEquals(
-        "java.util.List<java.lang.String>",
+    assertEquals("java.util.List<java.lang.String>",
         ((List<String>) methods.get(1).get("parameterTypes")).get(1));
   }
 
@@ -622,21 +576,18 @@ public class GraalvmReflectAnnontationProcessorTest {
   @SuppressWarnings("unchecked")
   @Test
   public void testMethodAnnotations() throws IOException {
-    Compilation compilation =
-        javac()
-            .withProcessors(new GraalvmReflectAnnontationProcessor())
-            .compile(
-                JavaFileObjects.forSourceString(
-                    "Test",
-                    "import com.formkiq.graalvm.annotations.Reflectable;\n"
-                        + "import java.util.*;\n"
-                        + "\n"
-                        + "final class Test {\n"
-                        + "  @Reflectable\n"
-                        + "  public void test() {}\n"
-                        + "  @Reflectable\n"
-                        + "  public void testParameters(int foo, List<String> bar) {}\n"
-                        + "}\n"));
+    Compilation compilation = javac().withProcessors(new GraalvmReflectAnnontationProcessor())
+        .compile(JavaFileObjects.forSourceString("Test", """
+            import com.formkiq.graalvm.annotations.Reflectable;
+            import java.util.*;
+
+            final class Test {
+              @Reflectable
+              public void test() {}
+              @Reflectable
+              public void testParameters(int foo, List<String> bar) {}
+            }
+            """));
 
     List<Map<String, Object>> map = getReflectConf(compilation, "default");
 
@@ -659,8 +610,7 @@ public class GraalvmReflectAnnontationProcessorTest {
     assertEquals("testParameters", methods.get(1).get("name"));
     assertEquals(2, ((List<String>) methods.get(1).get("parameterTypes")).size());
     assertEquals("int", ((List<String>) methods.get(1).get("parameterTypes")).get(0));
-    assertEquals(
-        "java.util.List<java.lang.String>",
+    assertEquals("java.util.List<java.lang.String>",
         ((List<String>) methods.get(1).get("parameterTypes")).get(1));
   }
 
@@ -672,19 +622,16 @@ public class GraalvmReflectAnnontationProcessorTest {
   @SuppressWarnings("unchecked")
   @Test
   public void testFieldAnnotations() throws IOException {
-    Compilation compilation =
-        javac()
-            .withProcessors(new GraalvmReflectAnnontationProcessor())
-            .compile(
-                JavaFileObjects.forSourceString(
-                    "Test",
-                    "import com.formkiq.graalvm.annotations.Reflectable;\n"
-                        + "import java.util.*;\n"
-                        + "@Reflectable\n"
-                        + "final class Test {\n"
-                        + "  @Reflectable private List<String> foo;\n"
-                        + "  @Reflectable int bar;\n"
-                        + "}\n"));
+    Compilation compilation = javac().withProcessors(new GraalvmReflectAnnontationProcessor())
+        .compile(JavaFileObjects.forSourceString("Test", """
+            import com.formkiq.graalvm.annotations.Reflectable;
+            import java.util.*;
+            @Reflectable
+            final class Test {
+              @Reflectable private List<String> foo;
+              @Reflectable int bar;
+            }
+            """));
 
     List<Map<String, Object>> map = getReflectConf(compilation, "default");
 
@@ -713,19 +660,16 @@ public class GraalvmReflectAnnontationProcessorTest {
   @SuppressWarnings("unchecked")
   @Test
   public void testFieldAnnotationsWithSettings() throws IOException {
-    Compilation compilation =
-        javac()
-            .withProcessors(new GraalvmReflectAnnontationProcessor())
-            .compile(
-                JavaFileObjects.forSourceString(
-                    "Test",
-                    "import com.formkiq.graalvm.annotations.Reflectable;\n"
-                        + "import java.util.*;\n"
-                        + "\n"
-                        + "final class Test {\n"
-                        + "  @Reflectable(allowWrite = true) List<String> foo;\n"
-                        + "  @Reflectable int bar;\n"
-                        + "}\n"));
+    Compilation compilation = javac().withProcessors(new GraalvmReflectAnnontationProcessor())
+        .compile(JavaFileObjects.forSourceString("Test", """
+            import com.formkiq.graalvm.annotations.Reflectable;
+            import java.util.*;
+
+            final class Test {
+              @Reflectable(allowWrite = true) List<String> foo;
+              @Reflectable int bar;
+            }
+            """));
 
     List<Map<String, Object>> map = getReflectConf(compilation, "default");
 
@@ -747,22 +691,19 @@ public class GraalvmReflectAnnontationProcessorTest {
   @SuppressWarnings("unchecked")
   @Test
   public void testMixedAnnotations() throws IOException {
-    Compilation compilation =
-        javac()
-            .withProcessors(new GraalvmReflectAnnontationProcessor())
-            .compile(
-                JavaFileObjects.forSourceString(
-                    "Test",
-                    "import com.formkiq.graalvm.annotations.Reflectable;\n"
-                        + "import java.util.*;\n"
-                        + "\n"
-                        + "@Reflectable\n"
-                        + "final class Test {\n"
-                        + "  @Reflectable List<String> foo;\n"
-                        + "  @Reflectable\n"
-                        + "  public void test() {}\n"
-                        + "  public void testParameters(int foo, List<String> bar) {}\n"
-                        + "}\n"));
+    Compilation compilation = javac().withProcessors(new GraalvmReflectAnnontationProcessor())
+        .compile(JavaFileObjects.forSourceString("Test", """
+            import com.formkiq.graalvm.annotations.Reflectable;
+            import java.util.*;
+
+            @Reflectable
+            final class Test {
+              @Reflectable List<String> foo;
+              @Reflectable
+              public void test() {}
+              public void testParameters(int foo, List<String> bar) {}
+            }
+            """));
 
     List<Map<String, Object>> map = getReflectConf(compilation, "default");
 
@@ -786,28 +727,23 @@ public class GraalvmReflectAnnontationProcessorTest {
   @SuppressWarnings("unchecked")
   @Test
   public void testMultipleSourceFiles() throws IOException {
-    Compilation compilation =
-        javac()
-            .withProcessors(new GraalvmReflectAnnontationProcessor())
-            .compile(
-                JavaFileObjects.forSourceString(
-                    "TestOne",
-                    "import com.formkiq.graalvm.annotations.Reflectable;\n"
-                        + "import java.util.*;\n"
-                        + "@Reflectable\n"
-                        + "final class TestOne {\n"
-                        + "  @Reflectable List<String> foo;\n"
-                        + "  @Reflectable\n"
-                        + "  public void test() {}\n"
-                        + "  public void testParameters(int foo, List<String> bar) {}\n"
-                        + "}\n"),
-                JavaFileObjects.forSourceString(
-                    "TestTwo",
-                    "import com.formkiq.graalvm.annotations.Reflectable;\n"
-                        + "import java.util.*;\n"
-                        + "@Reflectable\n"
-                        + "final class TestTwo {}\n"),
-                JavaFileObjects.forSourceString("TestThree", "final class TestThree {}\n"));
+    Compilation compilation = javac().withProcessors(new GraalvmReflectAnnontationProcessor())
+        .compile(JavaFileObjects.forSourceString("TestOne", """
+            import com.formkiq.graalvm.annotations.Reflectable;
+            import java.util.*;
+            @Reflectable
+            final class TestOne {
+              @Reflectable List<String> foo;
+              @Reflectable
+              public void test() {}
+              public void testParameters(int foo, List<String> bar) {}
+            }
+            """), JavaFileObjects.forSourceString("TestTwo", """
+            import com.formkiq.graalvm.annotations.Reflectable;
+            import java.util.*;
+            @Reflectable
+            final class TestTwo {}
+            """), JavaFileObjects.forSourceString("TestThree", "final class TestThree {}\n"));
 
     List<Map<String, Object>> map = getReflectConf(compilation, "default");
 
@@ -848,18 +784,14 @@ public class GraalvmReflectAnnontationProcessorTest {
    */
   @Test
   public void testEnumAnnotations() throws IOException {
-    Compilation compilation =
-        javac()
-            .withProcessors(new GraalvmReflectAnnontationProcessor())
-            .compile(
-                JavaFileObjects.forSourceString(
-                    "TestEnum",
-                    "import com.formkiq.graalvm.annotations.Reflectable;\n"
-                        + "@Reflectable\n"
-                        + "public enum TestEnum {\n"
-                        + "  REFLECTED_ENUM_ONE,\n"
-                        + "  REFLECTED_ENUM_TWO\n"
-                        + "}"));
+    Compilation compilation = javac().withProcessors(new GraalvmReflectAnnontationProcessor())
+        .compile(JavaFileObjects.forSourceString("TestEnum", """
+            import com.formkiq.graalvm.annotations.Reflectable;
+            @Reflectable
+            public enum TestEnum {
+              REFLECTED_ENUM_ONE,
+              REFLECTED_ENUM_TWO
+            }"""));
 
     List<Map<String, Object>> map = getReflectConf(compilation, "default");
 
@@ -880,26 +812,51 @@ public class GraalvmReflectAnnontationProcessorTest {
    */
   @Test
   public void testRecordAnnotations() throws IOException {
-    JavaFileObject recordSource = JavaFileObjects.forSourceString(
-            "com.example.TestRecord",
-            """
-            package com.example;
-      
-            import com.formkiq.graalvm.annotations.Reflectable;
-      
-            @Reflectable
-            public record TestRecord(String name) {}
-            """
-    );
+    JavaFileObject recordSource = JavaFileObjects.forSourceString("com.example.TestRecord", """
+        package com.example;
+
+        import com.formkiq.graalvm.annotations.Reflectable;
+
+        @Reflectable
+        public record TestRecord(String name) {}
+        """);
     Compilation compilation =
-            javac()
-                    .withProcessors(new GraalvmReflectAnnontationProcessor())
-                    .compile(recordSource);
+        javac().withProcessors(new GraalvmReflectAnnontationProcessor()).compile(recordSource);
 
     List<Map<String, Object>> map = getReflectConf(compilation, "com.example");
 
     assertEquals(1, map.size());
     assertEquals("com.example.TestRecord", map.get(0).get("name"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allPublicConstructors"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allPublicMethods"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allPublicFields"));
+    assertEquals(Boolean.FALSE, map.get(0).get("allDeclaredConstructors"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allDeclaredMethods"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allDeclaredFields"));
+  }
+
+  /**
+   * test java record.
+   *
+   * @throws IOException IOException
+   */
+  @Test
+  public void testInterfaceAnnotations() throws IOException {
+    JavaFileObject recordSource = JavaFileObjects.forSourceString("com.example.MyInterface", """
+        package com.example;
+
+        import com.formkiq.graalvm.annotations.Reflectable;
+
+        @Reflectable
+        public interface MyInterface {}
+        """);
+    Compilation compilation =
+        javac().withProcessors(new GraalvmReflectAnnontationProcessor()).compile(recordSource);
+
+    List<Map<String, Object>> map = getReflectConf(compilation, "com.example");
+
+    assertEquals(1, map.size());
+    assertEquals("com.example.MyInterface", map.get(0).get("name"));
     assertEquals(Boolean.TRUE, map.get(0).get("allPublicConstructors"));
     assertEquals(Boolean.TRUE, map.get(0).get("allPublicMethods"));
     assertEquals(Boolean.TRUE, map.get(0).get("allPublicFields"));
@@ -921,11 +878,8 @@ public class GraalvmReflectAnnontationProcessorTest {
   @Test
   public void testGenerateReflectConfigPath02() {
     GraalvmReflectAnnontationProcessor processor = new GraalvmReflectAnnontationProcessor();
-    Set<String> keys =
-        Set.of(
-            "com.formkiq.graalvm.processors.Test3",
-            "com.formkiq.graalvm.processors.ocr.Test5",
-            "com.formkiq.graalvm.processors.Test4");
+    Set<String> keys = Set.of("com.formkiq.graalvm.processors.Test3",
+        "com.formkiq.graalvm.processors.ocr.Test5", "com.formkiq.graalvm.processors.Test4");
     assertEquals("com.formkiq.graalvm.processors", processor.generateReflectConfigPath(keys));
   }
 

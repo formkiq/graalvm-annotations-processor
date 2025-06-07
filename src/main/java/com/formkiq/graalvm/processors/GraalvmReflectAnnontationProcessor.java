@@ -2,7 +2,7 @@
  * Copyright [2020] FormKiQ Inc. Licensed under the Apache License, Version 2.0 (the "License"); you
  * may not use this file except in compliance with the License. You may obtain a copy of the License
  * at
- *
+ * 
  * <p>http://www.apache.org/licenses/LICENSE-2.0
  *
  * <p>Unless required by applicable law or agreed to in writing, software distributed under the
@@ -59,13 +59,11 @@ import javax.tools.StandardLocation;
 
 /** Processes {@link Reflectable} {@link ReflectableImport} Annotations. */
 @AutoService(Processor.class)
-@SupportedAnnotationTypes({
-  "com.formkiq.graalvm.annotations.Reflectable",
-  "com.formkiq.graalvm.annotations.ReflectableImport",
-  "com.formkiq.graalvm.annotations.ReflectableClasses",
-  "com.formkiq.graalvm.annotations.ReflectableClass",
-  "com.formkiq.graalvm.annotations.ReflectableClass.ReflectableClasses"
-})
+@SupportedAnnotationTypes({"com.formkiq.graalvm.annotations.Reflectable",
+    "com.formkiq.graalvm.annotations.ReflectableImport",
+    "com.formkiq.graalvm.annotations.ReflectableClasses",
+    "com.formkiq.graalvm.annotations.ReflectableClass",
+    "com.formkiq.graalvm.annotations.ReflectableClass.ReflectableClasses"})
 @SupportedSourceVersion(SourceVersion.RELEASE_11)
 public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
 
@@ -106,8 +104,8 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
       Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues =
           annotationMirror.getElementValues();
 
-      for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry :
-          elementValues.entrySet()) {
+      for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : elementValues
+          .entrySet()) {
 
         String simpleNameKey = entry.getKey().getSimpleName().toString();
         Object value = entry.getValue().getValue();
@@ -146,10 +144,8 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
 
       int lastDotIndex = name.lastIndexOf(PACKAGE_SEPARATOR);
       if (lastDotIndex != -1) {
-        String innerClassName =
-            name.substring(0, lastDotIndex)
-                + INNER_CLASS_SEPARATOR
-                + name.substring(lastDotIndex + 1);
+        String innerClassName = name.substring(0, lastDotIndex) + INNER_CLASS_SEPARATOR
+            + name.substring(lastDotIndex + 1);
         return forName(innerClassName);
       }
 
@@ -159,11 +155,8 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
 
   String generateReflectConfigPath(final Set<String> keys) {
 
-    Set<String> strings =
-        keys.stream()
-            .map(this::removePartsContainingDotFollowedByCapital)
-            .filter(m -> m != null && m.length() > 1)
-            .collect(Collectors.toSet());
+    Set<String> strings = keys.stream().map(this::removePartsContainingDotFollowedByCapital)
+        .filter(m -> m != null && m.length() > 1).collect(Collectors.toSet());
 
     if (strings.isEmpty()) {
       strings.add("default");
@@ -171,10 +164,7 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
     final int shortestLength = strings.stream().mapToInt(String::length).min().getAsInt();
 
     List<String> list =
-        strings.stream()
-            .filter(s -> s.length() == shortestLength)
-            .sorted()
-            .toList();
+        strings.stream().filter(s -> s.length() == shortestLength).sorted().toList();
 
     return list.get(0);
   }
@@ -194,9 +184,7 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
       case METHOD:
         className = ((TypeElement) element.getEnclosingElement()).getQualifiedName().toString();
         break;
-      case ENUM:
-      case RECORD:
-      case CLASS:
+      default:
         TypeElement te = (TypeElement) element;
 
         List<String> simpleNames = new ArrayList<>();
@@ -216,9 +204,6 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
             className = e.substring(0, pos) + String.join("$", simpleNames);
           }
         }
-
-        break;
-      default:
         break;
     }
 
@@ -249,8 +234,8 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
   }
 
   @Override
-  public boolean process(
-      final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv) {
+  public boolean process(final Set<? extends TypeElement> annotations,
+      final RoundEnvironment roundEnv) {
 
     if (roundEnv.processingOver()) {
 
@@ -276,8 +261,7 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
   private Reflect processClass(final Reflect reflect, final Reflectable reflectable) {
 
     LOGGER.log(LOGLEVEL, "processClass " + reflect.name());
-    reflect
-        .allDeclaredConstructors(reflectable.allDeclaredConstructors())
+    reflect.allDeclaredConstructors(reflectable.allDeclaredConstructors())
         .allDeclaredFields(reflectable.allDeclaredFields())
         .allDeclaredMethods(reflectable.allDeclaredMethods())
         .allPublicConstructors(reflectable.allPublicConstructors())
@@ -297,8 +281,7 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
   private Reflect processClass(final Reflect reflect, final ReflectableClass reflectable) {
 
     LOGGER.log(LOGLEVEL, "processClass " + reflect.name());
-    reflect
-        .allDeclaredConstructors(reflectable.allDeclaredConstructors())
+    reflect.allDeclaredConstructors(reflectable.allDeclaredConstructors())
         .allDeclaredFields(reflectable.allDeclaredFields())
         .allDeclaredMethods(reflectable.allDeclaredMethods())
         .allPublicConstructors(reflectable.allPublicConstructors())
@@ -334,10 +317,8 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
       for (Method method : forName.getMethods()) {
         Reflectable reflection = method.getAnnotation(Reflectable.class);
         if (reflection != null) {
-          List<String> parameterTypes =
-              Arrays.stream(method.getParameters())
-                  .map(p -> p.getParameterizedType().getTypeName())
-                  .collect(Collectors.toList());
+          List<String> parameterTypes = Arrays.stream(method.getParameters())
+              .map(p -> p.getParameterizedType().getTypeName()).collect(Collectors.toList());
 
           LOGGER.log(LOGLEVEL, "adding Method " + method.getName() + " to " + clazz);
           reflect.addMethod(method.getName(), parameterTypes);
@@ -425,22 +406,15 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
           case METHOD:
             String methodName = element.getSimpleName().toString();
 
-            List<String> parameterTypes =
-                ((ExecutableElement) element)
-                    .getParameters().stream()
-                        .map(param -> param.asType().toString())
-                        .collect(Collectors.toList());
+            List<String> parameterTypes = ((ExecutableElement) element).getParameters().stream()
+                .map(param -> param.asType().toString()).collect(Collectors.toList());
 
             LOGGER.log(LOGLEVEL, "adding Method " + methodName + " to " + className);
             reflect.addMethod(methodName, parameterTypes);
             break;
-          case ENUM:
-          case RECORD:
-          case CLASS:
+          default:
             reflect = processClass(reflect, reflectable);
             break;
-          default:
-            throw new RuntimeException("Unsupported kind of element: " + element.getKind());
         }
       }
     }
@@ -520,9 +494,8 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
       }
     }
 
-    Set<? extends Element> reflectableClasses =
-        roundEnv.getElementsAnnotatedWithAny(
-            Set.of(ReflectableClass.class, ReflectableClass.ReflectableClasses.class));
+    Set<? extends Element> reflectableClasses = roundEnv.getElementsAnnotatedWithAny(
+        Set.of(ReflectableClass.class, ReflectableClass.ReflectableClasses.class));
 
     for (Element element : reflectableClasses) {
       String className = getClassNameByType(element);
@@ -536,8 +509,7 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
   }
 
   private String removePartsContainingDotFollowedByCapital(final String input) {
-    return Arrays.stream(input.split("\\."))
-        .filter(part -> !part.matches("\\p{Upper}.*"))
+    return Arrays.stream(input.split("\\.")).filter(part -> !part.matches("\\p{Upper}.*"))
         .collect(Collectors.joining("."));
   }
 
@@ -548,13 +520,8 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
 
       String name = generateReflectConfigPath(this.reflects.keySet());
 
-      FileObject file =
-          this.processingEnv
-              .getFiler()
-              .createResource(
-                  StandardLocation.CLASS_OUTPUT,
-                  "",
-                  "META-INF/native-image/" + name + "/reflect-config.json");
+      FileObject file = this.processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT,
+          "", "META-INF/native-image/" + name + "/reflect-config.json");
 
       List<Map<String, Object>> data =
           this.reflects.values().stream().map(Reflect::data).collect(Collectors.toList());
