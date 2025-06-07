@@ -71,10 +71,10 @@ mavenPublishing {
     signAllPublications()
 
     pom {
-        name = "FormKiQ Lambda Runtime Graalvm"
-        description = "Lambda Runtime Graalvm"
+        name = "FormKiQ Lambda Runtime Graalvm Annotations"
+        description = "Lambda Runtime Graalvm Annotations"
         inceptionYear = "2020"
-        url = "https://github.com/formkiq/lambda-runtime-graalvm"
+        url = "https://github.com/formkiq/graalvm-annotations-processor"
         licenses {
             license {
                 name = "The Apache License, Version 2.0"
@@ -89,9 +89,9 @@ mavenPublishing {
             }
         }
         scm {
-            url = 'https://github.com/formkiq/lambda-runtime-graalvm.git'
-            connection = 'scm:git:git://github.com/formkiq/lambda-runtime-graalvm.git'
-            developerConnection = 'scm:git:ssh://github.com/formkiq/lambda-runtime-graalvm.git'
+            url = 'https://github.com/formkiq/graalvm-annotations-processor.git'
+            connection = 'scm:git:git://github.com/formkiq/graalvm-annotations-processor.git'
+            developerConnection = 'scm:git:ssh://github.com/formkiq/graalvm-annotations-processor.git'
         }
     }
 }
