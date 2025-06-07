@@ -3,21 +3,21 @@ plugins {
 	id 'maven-publish'
 	id 'signing'
 	id 'checkstyle'
-  	id 'com.diffplug.spotless' version '6.17.0'
-  	id 'com.github.spotbugs'  version '5.0.14'
-    id 'com.github.ben-manes.versions' version '0.46.0'
+  	id 'com.diffplug.spotless' version '7.0.4'
+  	id 'com.github.spotbugs'  version '6.1.13'
+    id 'com.github.ben-manes.versions' version '0.52.0'
 }
 
 group 'com.formkiq'
-version '1.4.2'
+version '1.5.0'
 
 dependencies {
-	annotationProcessor group: 'com.google.auto.service', name: 'auto-service', version: '1.0.1'
-	compileOnly group: 'com.google.auto.service', name: 'auto-service', version: '1.0.1'
-	compileOnly group: 'com.google.auto.service', name: 'auto-service-annotations', version: '1.0.1'
+	annotationProcessor group: 'com.google.auto.service', name: 'auto-service', version: '1.1.1'
+	compileOnly group: 'com.google.auto.service', name: 'auto-service', version: '1.1.1'
+	compileOnly group: 'com.google.auto.service', name: 'auto-service-annotations', version: '1.1.1'
 
     implementation group: 'com.formkiq', name: 'graalvm-annotations', version: '1.2.0'
-	implementation group: 'com.google.code.gson', name: 'gson', version: '2.10.1'
+	implementation group: 'com.google.code.gson', name: 'gson', version: '2.13.1'
 	testImplementation group: 'junit', name: 'junit', version:'4.+'
 	testImplementation group: 'com.google.testing.compile', name: 'compile-testing', version: '0.21.0'
 }
@@ -66,7 +66,7 @@ java {
     withSourcesJar()
     
 	toolchain {
-		languageVersion.set(JavaLanguageVersion.of(11))
+		languageVersion.set(JavaLanguageVersion.of(17))
 	}
 }
 

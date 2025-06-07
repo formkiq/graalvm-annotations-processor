@@ -25,7 +25,6 @@ import com.google.gson.JsonSyntaxException;
 import com.google.testing.compile.Compilation;
 import com.google.testing.compile.JavaFileObjects;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +38,7 @@ import org.junit.Test;
 public class GraalvmReflectAnnontationProcessorTest {
 
   /** {@link Gson}. */
-  private Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+  private final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 
   /**
    * testReflectableImport01.
@@ -430,7 +429,7 @@ public class GraalvmReflectAnnontationProcessorTest {
     assertEquals(Boolean.TRUE, map.get(i).get("allDeclaredMethods"));
     assertEquals(Boolean.TRUE, map.get(i).get("allDeclaredFields"));
     assertNull(map.get(i).get("fields"));
-    assertNull(map.get(i++).get("methods"));
+    assertNull(map.get(i).get("methods"));
   }
 
   /**
@@ -466,7 +465,7 @@ public class GraalvmReflectAnnontationProcessorTest {
     int i = 0;
     assertEquals("test.Test6", map.get(i++).get("name"));
     assertEquals("test.Test6$Data0", map.get(i++).get("name"));
-    assertEquals("test.Test6$Data0$Data1", map.get(i++).get("name"));
+    assertEquals("test.Test6$Data0$Data1", map.get(i).get("name"));
   }
 
   /**
@@ -506,10 +505,10 @@ public class GraalvmReflectAnnontationProcessorTest {
     assertEquals("test.Test6", map.get(i++).get("name"));
     assertEquals("test.Test6$Data0", map.get(i++).get("name"));
     assertEquals("test.Test6$Data0$Data1", map.get(i++).get("name"));
-    assertEquals("test.Test6$Data0$Data1$Data2", map.get(i++).get("name"));
+    assertEquals("test.Test6$Data0$Data1$Data2", map.get(i).get("name"));
   }
 
-  @SuppressWarnings({"unchecked", "resource"})
+  @SuppressWarnings({"unchecked"})
   private List<Map<String, Object>> getReflectConf(
       final Compilation compilation, final String filename)
       throws JsonSyntaxException, JsonIOException, IOException {
@@ -518,16 +517,10 @@ public class GraalvmReflectAnnontationProcessorTest {
             StandardLocation.CLASS_OUTPUT,
             "META-INF/native-image/" + filename + "/reflect-config.json");
 
+    assertTrue(file.isPresent());
     List<Map<String, Object>> list = this.gson.fromJson(file.get().openReader(false), List.class);
 
-    Collections.sort(
-        list,
-        new Comparator<Map<String, Object>>() {
-          @Override
-          public int compare(final Map<String, Object> o1, final Map<String, Object> o2) {
-            return o1.get("name").toString().compareTo(o2.get("name").toString());
-          }
-        });
+    list.sort(Comparator.comparing(o -> o.get("name").toString()));
 
     return list;
   }
@@ -872,6 +865,41 @@ public class GraalvmReflectAnnontationProcessorTest {
 
     assertEquals(1, map.size());
     assertEquals("TestEnum", map.get(0).get("name"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allPublicConstructors"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allPublicMethods"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allPublicFields"));
+    assertEquals(Boolean.FALSE, map.get(0).get("allDeclaredConstructors"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allDeclaredMethods"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allDeclaredFields"));
+  }
+
+  /**
+   * test java record.
+   *
+   * @throws IOException IOException
+   */
+  @Test
+  public void testRecordAnnotations() throws IOException {
+    JavaFileObject recordSource = JavaFileObjects.forSourceString(
+            "com.example.TestRecord",
+            """
+            package com.example;
+      
+            import com.formkiq.graalvm.annotations.Reflectable;
+      
+            @Reflectable
+            public record TestRecord(String name) {}
+            """
+    );
+    Compilation compilation =
+            javac()
+                    .withProcessors(new GraalvmReflectAnnontationProcessor())
+                    .compile(recordSource);
+
+    List<Map<String, Object>> map = getReflectConf(compilation, "com.example");
+
+    assertEquals(1, map.size());
+    assertEquals("com.example.TestRecord", map.get(0).get("name"));
     assertEquals(Boolean.TRUE, map.get(0).get("allPublicConstructors"));
     assertEquals(Boolean.TRUE, map.get(0).get("allPublicMethods"));
     assertEquals(Boolean.TRUE, map.get(0).get("allPublicFields"));
