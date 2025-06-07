@@ -1,8 +1,9 @@
+import com.vanniktech.maven.publish.SonatypeHost
+
 plugins {
 	id 'java'
-	id 'maven-publish'
-	id 'signing'
 	id 'checkstyle'
+    id 'com.vanniktech.maven.publish' version '0.32.0'
   	id 'com.diffplug.spotless' version '7.0.4'
   	id 'com.github.spotbugs'  version '6.1.13'
     id 'com.github.ben-manes.versions' version '0.52.0'
@@ -36,13 +37,13 @@ spotless {
 spotbugs {
   excludeFilter = file("$rootDir/config/gradle/spotbugs-exclude.xml")
 }
-  
+
 spotbugsMain {
-  reports {
-    html {
-      enabled = true
+    reports {
+        html {
+            required.set(true)
+        }
     }
-  }
 }
 
 checkstyle {
@@ -58,84 +59,42 @@ repositories {
     mavenCentral()
 }
 
-check {
-	  dependsOn(tasks.publishToMavenLocal)
-}
-
 java {
-    withJavadocJar()
-    withSourcesJar()
-    
 	toolchain {
 		languageVersion.set(JavaLanguageVersion.of(17))
 	}
 }
 
-javadoc {
-    if(JavaVersion.current().isJava9Compatible()) {
-        options.addBooleanOption('html5', true)
+mavenPublishing {
+
+    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+    signAllPublications()
+
+    pom {
+        name = "FormKiQ Lambda Runtime Graalvm"
+        description = "Lambda Runtime Graalvm"
+        inceptionYear = "2020"
+        url = "https://github.com/formkiq/lambda-runtime-graalvm"
+        licenses {
+            license {
+                name = "The Apache License, Version 2.0"
+                url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                distribution = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+            }
+        }
+        developers {
+            developer {
+                id = 'mfriesen'
+                name = 'Mike Friesen'
+            }
+        }
+        scm {
+            url = 'https://github.com/formkiq/lambda-runtime-graalvm.git'
+            connection = 'scm:git:git://github.com/formkiq/lambda-runtime-graalvm.git'
+            developerConnection = 'scm:git:ssh://github.com/formkiq/lambda-runtime-graalvm.git'
+        }
     }
 }
 
-artifacts {
-    archives jar
-	
-    archives javadocJar
-    archives sourcesJar
-}
-
-afterEvaluate {
-	   tasks.getByName('spotlessCheck').dependsOn(tasks.getByName('spotlessApply'))
-}
-
-publishing {
-	publications {
-	    mavenJava(MavenPublication) {
-	        from components.java
-	        
-	        pom {
-                name = 'FormKiQ Lambda Runtime Graalvm Annotations'
-                description = 'Lambda Runtime Graalvm Annotations'
-                url = 'https://github.com/formkiq/graalvm-annotations-processor'
-                licenses {
-                    license {
-                        name = 'The Apache License, Version 2.0'
-                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                    }
-                }
-                developers {
-                    developer {
-                        id = 'mfriesen'
-                        name = 'Mike Friesen'
-                        email = 'mike@formkiq.com'
-                    }
-                }
-                scm {
-                    connection = 'scm:git:git://github.com/formkiq/graalvm-annotations-processor.git'
-                    developerConnection = 'scm:git:ssh://github.com/formkiq/graalvm-annotations-processor.git'
-                    url = 'https://github.com/formkiq/graalvm-annotations-processor.git'
-                }
-            }
-	    }
-	}
-	repositories {
-		maven {
-		  credentials {
-		    username project.repoUser
-		    password project.repoPassword
-		  }
-		  url "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-		  // url "https://oss.sonatype.org/content/repositories/snapshots/"
-		}
-	}
-}
-
-signing {
-    sign publishing.publications.mavenJava
-}
-
-check {
-	dependsOn(tasks.publishToMavenLocal)
-}
-
-spotlessJavaCheck.dependsOn spotlessJavaApply
+compileJava.dependsOn(tasks.spotlessApply)
+check.dependsOn(tasks.publishToMavenLocal)
