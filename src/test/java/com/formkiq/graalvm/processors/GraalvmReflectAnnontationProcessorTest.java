@@ -836,6 +836,48 @@ public class GraalvmReflectAnnontationProcessorTest {
   }
 
   /**
+   * test nested java record.
+   *
+   * @throws IOException IOException
+   */
+  @Test
+  public void testNestedRecordAnnotations() throws IOException {
+    JavaFileObject recordSource = JavaFileObjects.forSourceString("com.example.TestRecord", """
+        package com.example;
+
+        import com.formkiq.graalvm.annotations.Reflectable;
+
+        @Reflectable
+        public record TestRecord(String name) {
+           @Reflectable
+           public record NestedTestRecord(String name) {
+           }
+        }
+        """);
+    Compilation compilation =
+        javac().withProcessors(new GraalvmReflectAnnontationProcessor()).compile(recordSource);
+
+    List<Map<String, Object>> map = getReflectConf(compilation, "com.example");
+
+    assertEquals(2, map.size());
+    assertEquals("com.example.TestRecord", map.get(0).get("name"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allPublicConstructors"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allPublicMethods"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allPublicFields"));
+    assertEquals(Boolean.FALSE, map.get(0).get("allDeclaredConstructors"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allDeclaredMethods"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allDeclaredFields"));
+
+    assertEquals("com.example.TestRecord$NestedTestRecord", map.get(1).get("name"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allPublicConstructors"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allPublicMethods"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allPublicFields"));
+    assertEquals(Boolean.FALSE, map.get(0).get("allDeclaredConstructors"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allDeclaredMethods"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allDeclaredFields"));
+  }
+
+  /**
    * test java record.
    *
    * @throws IOException IOException

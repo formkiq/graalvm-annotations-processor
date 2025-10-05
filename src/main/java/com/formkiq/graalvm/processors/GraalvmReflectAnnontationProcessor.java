@@ -53,6 +53,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
@@ -194,7 +195,7 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
           result = result.getEnclosingElement();
         }
 
-        className = te.getQualifiedName().toString();
+        className = getBinaryName(te);
 
         if (!simpleNames.isEmpty()) {
           String e = element.getEnclosingElement().toString();
@@ -208,6 +209,11 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
     }
 
     return className;
+  }
+
+  public String getBinaryName(final TypeElement typeElement) {
+    Elements elements = processingEnv.getElementUtils();
+    return elements.getBinaryName(typeElement).toString();
   }
 
   /**
