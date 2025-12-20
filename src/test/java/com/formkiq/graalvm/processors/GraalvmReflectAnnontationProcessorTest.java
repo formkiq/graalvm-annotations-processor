@@ -56,7 +56,7 @@ public class GraalvmReflectAnnontationProcessorTest {
             public class Test { }
             """));
 
-    List<Map<String, Object>> map = getReflectConf(compilation, "com.formkiq.graalvm.processors");
+    List<Map<String, Object>> map = getReflectConf(compilation, "test");
 
     assertEquals(1, map.size());
     assertEquals("com.formkiq.graalvm.processors.Test3", map.get(0).get("name"));
@@ -100,7 +100,7 @@ public class GraalvmReflectAnnontationProcessorTest {
             public class Test { }
             """));
 
-    List<Map<String, Object>> map = getReflectConf(compilation, "com.formkiq.graalvm.processors");
+    List<Map<String, Object>> map = getReflectConf(compilation, "test");
 
     assertEquals(1, map.size());
     assertEquals("com.formkiq.graalvm.processors.Test4", map.get(0).get("name"));
@@ -144,7 +144,7 @@ public class GraalvmReflectAnnontationProcessorTest {
             public class Test { }
             """));
 
-    List<Map<String, Object>> map = getReflectConf(compilation, "com.formkiq.graalvm.processors");
+    List<Map<String, Object>> map = getReflectConf(compilation, "test");
 
     assertEquals(1, map.size());
     assertEquals("com.formkiq.graalvm.processors.Test4", map.get(0).get("name"));
@@ -190,7 +190,7 @@ public class GraalvmReflectAnnontationProcessorTest {
             public class Test { }
             """));
 
-    List<Map<String, Object>> map = getReflectConf(compilation, "com.formkiq.graalvm.processors");
+    List<Map<String, Object>> map = getReflectConf(compilation, "test");
 
     assertEquals(1, map.size());
 
@@ -218,7 +218,7 @@ public class GraalvmReflectAnnontationProcessorTest {
             public class Test { }
             """));
 
-    List<Map<String, Object>> map = getReflectConf(compilation, "com.formkiq.graalvm.processors");
+    List<Map<String, Object>> map = getReflectConf(compilation, "test");
 
     assertEquals(1, map.size());
     assertEquals("com.formkiq.graalvm.processors.Test5$Test5Inner", map.get(0).get("name"));
@@ -250,7 +250,7 @@ public class GraalvmReflectAnnontationProcessorTest {
             public class Test { }
             """));
 
-    List<Map<String, Object>> map = getReflectConf(compilation, "com.formkiq.graalvm.processors");
+    List<Map<String, Object>> map = getReflectConf(compilation, "test");
 
     assertEquals(2, map.size());
     assertEquals("com.formkiq.graalvm.processors.Test4", map.get(0).get("name"));
