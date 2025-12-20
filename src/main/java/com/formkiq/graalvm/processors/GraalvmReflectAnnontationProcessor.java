@@ -50,6 +50,7 @@ import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeMirror;
@@ -81,6 +82,8 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
   private final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
   /** {@link List} of {@link Reflect}. */
   private final Map<String, Reflect> reflects = new HashMap<>();
+  /** Name of Annotation Package. */
+  private String packageName = "default";
 
   private TypeElement asTypeElement(final TypeMirror typeMirror) {
     Types typeUtils = this.processingEnv.getTypeUtils();
@@ -394,6 +397,8 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
 
     for (Element element : roundEnv.getElementsAnnotatedWith(Reflectable.class)) {
 
+      setPackageName(element);
+
       String className = getClassNameByType(element);
       LOGGER.log(LOGLEVEL, "processing 'Reflectable' annotation on class " + className);
 
@@ -429,14 +434,27 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
   /**
    * Load Reflectable Imports.
    *
-   * @param roundEnv {@link RoundEnvironment}s
+   * @param roundEnv {@link RoundEnvironment}
    */
   private void processingReflectableImports(final RoundEnvironment roundEnv) {
 
     for (Element element : roundEnv.getElementsAnnotatedWith(ReflectableImport.class)) {
+      setPackageName(element);
       processImportedClasses(element);
       processImportFiles(element);
     }
+  }
+
+  private void setPackageName(final Element element) {
+    String name = getPackage(element);
+    if (name != null && !name.isEmpty()) {
+      this.packageName = name;
+    }
+  }
+
+  private String getPackage(final Element element) {
+    PackageElement pkg = processingEnv.getElementUtils().getPackageOf(element);
+    return pkg.getQualifiedName().toString();
   }
 
   /**
@@ -486,6 +504,8 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
 
     for (Element element : roundEnv.getElementsAnnotatedWith(ReflectableClasses.class)) {
 
+      setPackageName(element);
+
       String className = getClassNameByType(element);
       LOGGER.log(LOGLEVEL, "processing 'ReflectableClasses' annotation on class " + className);
 
@@ -504,6 +524,9 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
         Set.of(ReflectableClass.class, ReflectableClass.ReflectableClasses.class));
 
     for (Element element : reflectableClasses) {
+
+      setPackageName(element);
+
       String className = getClassNameByType(element);
       LOGGER.log(LOGLEVEL, "processing 'ReflectableClasses' annotation on class " + className);
 
@@ -524,10 +547,8 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
 
     try {
 
-      String name = generateReflectConfigPath(this.reflects.keySet());
-
       FileObject file = this.processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT,
-          "", "META-INF/native-image/" + name + "/reflect-config.json");
+          "", "META-INF/native-image/" + packageName + "/reflect-config.json");
 
       List<Map<String, Object>> data =
           this.reflects.values().stream().map(Reflect::data).collect(Collectors.toList());
