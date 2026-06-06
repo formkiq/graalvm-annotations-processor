@@ -830,7 +830,7 @@ public class GraalvmReflectAnnontationProcessorTest {
     assertEquals(Boolean.TRUE, map.get(0).get("allPublicConstructors"));
     assertEquals(Boolean.TRUE, map.get(0).get("allPublicMethods"));
     assertEquals(Boolean.TRUE, map.get(0).get("allPublicFields"));
-    assertEquals(Boolean.FALSE, map.get(0).get("allDeclaredConstructors"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allDeclaredConstructors"));
     assertEquals(Boolean.TRUE, map.get(0).get("allDeclaredMethods"));
     assertEquals(Boolean.TRUE, map.get(0).get("allDeclaredFields"));
   }
@@ -864,17 +864,17 @@ public class GraalvmReflectAnnontationProcessorTest {
     assertEquals(Boolean.TRUE, map.get(0).get("allPublicConstructors"));
     assertEquals(Boolean.TRUE, map.get(0).get("allPublicMethods"));
     assertEquals(Boolean.TRUE, map.get(0).get("allPublicFields"));
-    assertEquals(Boolean.FALSE, map.get(0).get("allDeclaredConstructors"));
+    assertEquals(Boolean.TRUE, map.get(0).get("allDeclaredConstructors"));
     assertEquals(Boolean.TRUE, map.get(0).get("allDeclaredMethods"));
     assertEquals(Boolean.TRUE, map.get(0).get("allDeclaredFields"));
 
     assertEquals("com.example.TestRecord$NestedTestRecord", map.get(1).get("name"));
-    assertEquals(Boolean.TRUE, map.get(0).get("allPublicConstructors"));
-    assertEquals(Boolean.TRUE, map.get(0).get("allPublicMethods"));
-    assertEquals(Boolean.TRUE, map.get(0).get("allPublicFields"));
-    assertEquals(Boolean.FALSE, map.get(0).get("allDeclaredConstructors"));
-    assertEquals(Boolean.TRUE, map.get(0).get("allDeclaredMethods"));
-    assertEquals(Boolean.TRUE, map.get(0).get("allDeclaredFields"));
+    assertEquals(Boolean.TRUE, map.get(1).get("allPublicConstructors"));
+    assertEquals(Boolean.TRUE, map.get(1).get("allPublicMethods"));
+    assertEquals(Boolean.TRUE, map.get(1).get("allPublicFields"));
+    assertEquals(Boolean.TRUE, map.get(1).get("allDeclaredConstructors"));
+    assertEquals(Boolean.TRUE, map.get(1).get("allDeclaredMethods"));
+    assertEquals(Boolean.TRUE, map.get(1).get("allDeclaredFields"));
   }
 
   /**

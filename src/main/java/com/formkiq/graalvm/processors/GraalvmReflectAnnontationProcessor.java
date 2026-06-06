@@ -66,7 +66,7 @@ import javax.tools.StandardLocation;
     "com.formkiq.graalvm.annotations.ReflectableClasses",
     "com.formkiq.graalvm.annotations.ReflectableClass",
     "com.formkiq.graalvm.annotations.ReflectableClass.ReflectableClasses"})
-@SupportedSourceVersion(SourceVersion.RELEASE_11)
+@SupportedSourceVersion(SourceVersion.RELEASE_17)
 public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
 
   /** The inner class separator character: '$'. */
@@ -301,6 +301,28 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
   }
 
   /**
+   * Process Record Class.
+   *
+   * @param reflect {@link Reflect}
+   * @param reflectable {@link Reflectable}
+   * @return {@link Reflect}
+   */
+  private Reflect processRecordClass(final Reflect reflect, final Reflectable reflectable) {
+    return processClass(reflect, reflectable).allDeclaredConstructors(Boolean.TRUE);
+  }
+
+  /**
+   * Process Record Class.
+   *
+   * @param reflect {@link Reflect}
+   * @param reflectable {@link ReflectableClass}
+   * @return {@link Reflect}
+   */
+  private Reflect processRecordClass(final Reflect reflect, final ReflectableClass reflectable) {
+    return processClass(reflect, reflectable).allDeclaredConstructors(Boolean.TRUE);
+  }
+
+  /**
    * Process Imported Class using {@link Class}.
    *
    * @param clazz {@link Class}
@@ -313,6 +335,9 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
 
       if (reflectable != null) {
         processClass(reflect, reflectable);
+        if (forName.isRecord()) {
+          reflect.allDeclaredConstructors(Boolean.TRUE);
+        }
       }
 
       for (Field field : forName.getDeclaredFields()) {
@@ -424,7 +449,8 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
             reflect.addMethod(methodName, parameterTypes);
             break;
           default:
-            reflect = processClass(reflect, reflectable);
+            reflect = isRecord(element) ? processRecordClass(reflect, reflectable)
+                : processClass(reflect, reflectable);
             break;
         }
       }
@@ -465,12 +491,14 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
   private void processReflectableClass(final ReflectableClass reflectable) {
 
     String className = null;
+    boolean isRecord = false;
     try {
       reflectable.className();
     } catch (MirroredTypeException e) {
 
       TypeMirror typeMirror = e.getTypeMirror();
       TypeElement asTypeElement = asTypeElement(typeMirror);
+      isRecord = isRecord(asTypeElement);
 
       className = asTypeElement.getQualifiedName().toString();
 
@@ -482,7 +510,8 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
     }
 
     Reflect reflect = getReflect(className);
-    reflect = processClass(reflect, reflectable);
+    reflect =
+        isRecord ? processRecordClass(reflect, reflectable) : processClass(reflect, reflectable);
 
     for (ReflectableField field : reflectable.fields()) {
       LOGGER.log(LOGLEVEL, "adding Field " + field.name() + " to " + className);
@@ -540,6 +569,11 @@ public class GraalvmReflectAnnontationProcessor extends AbstractProcessor {
   private String removePartsContainingDotFollowedByCapital(final String input) {
     return Arrays.stream(input.split("\\.")).filter(part -> !part.matches("\\p{Upper}.*"))
         .collect(Collectors.joining("."));
+  }
+
+  private boolean isRecord(final Element element) {
+    return "RECORD".equals(element.getKind().name()) || element.getEnclosedElements().stream()
+        .anyMatch(e -> "RECORD_COMPONENT".equals(e.getKind().name()));
   }
 
   /** Write Output File. */
